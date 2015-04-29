@@ -4,6 +4,7 @@ import sys
 import re
 import loghelper
 import adbhelper
+import shutil
 
 from adbhelper import getProp
 logcatcmdpattern = "adb logcat -d -v threadtime > %s.log"
@@ -22,8 +23,7 @@ def main():
     pwd = os.getcwd()
     workpath = "%s/%s" % (pwd, mainKey)
     if os.path.exists(workpath):
-        cmd = "rm -rf %s" % workpath
-        os.system(cmd)
+        shutil.rmtree(workpath)
     os.makedirs(workpath)
     os.chdir(workpath)
 
@@ -41,10 +41,10 @@ def main():
     cmd = raw_input("Enter any key to start.")
     while cmd != "f":
         index += 1
-        outputpreffix = "%s_%d\(%s\)" % (mainKey, index, releaseInfo)
+        outputpreffix = "%s_%d-%s" % (mainKey, index, releaseInfo)
 
-        logcatcmd = logcatcmdpattern % outputpreffix
-        dmesgcmd = dmesgcmdpattern % outputpreffix
+        logcatcmd = logcatcmdpattern % (outputpreffix)
+        dmesgcmd = dmesgcmdpattern % (outputpreffix)
 
         os.system(logcatcmd)
         os.system(dmesgcmd)
