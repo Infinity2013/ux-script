@@ -3,7 +3,7 @@ import os
 import sys
 import re
 from clog import clog
-
+import platform
 clog = clog()
 clog.setLevel("v|e")
 def formatcheck(string):
@@ -13,6 +13,8 @@ def formatcheck(string):
         return True
 
 def versioncheck():
+    if platform.system() != "Linux":
+        return
     clog.v("Checking updates!")
     os.system("git reset HEAD --hard")
     os.system("git remote update")
