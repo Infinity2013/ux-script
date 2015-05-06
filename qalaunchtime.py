@@ -8,6 +8,7 @@ import time
 from argparse import ArgumentParser
 from mail import send_email
 import adbhelper
+from update import versioncheck
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
 TAGS = "gfx wm am input view res freq dalvik"
@@ -150,6 +151,7 @@ def main():
 
 
 def doQALaunchTime(qaArgs):
+    versioncheck()
 
     x = qaArgs.get("x")
     y = qaArgs.get("y")

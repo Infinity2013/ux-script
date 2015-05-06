@@ -8,6 +8,7 @@ import shutil
 import subprocess
 
 from adbhelper import getProp
+from update import versioncheck
 logcatcmdpattern = "adb logcat -d -v threadtime > %s.log"
 dmesgcmdpattern = "adb shell dmesg > %s.dmesg"
 
@@ -29,6 +30,7 @@ def device_serial(i = 1):
         
 
 def main():
+    versioncheck()
     if len(sys.argv) == 3:
         kernelWakeupTime = getKernelWakeupTime(sys.argv[1])
         fwWakeupTime = getFwWakeupTime(sys.argv[2])

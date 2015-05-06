@@ -9,6 +9,7 @@ import re
 from argparse import ArgumentParser
 from clog import clog
 from datetime import datetime
+from update import versioncheck
 
 TIME_TO_STABLE = 2 
 INTERVAL_SLEEP = 5
@@ -120,6 +121,7 @@ def doCase4Sofia(outfile):
 
     
 def main():
+    versioncheck()
     p = ArgumentParser(usage='sendevent.py -r -o outfile', description='Author wxl')
     p.add_argument('-r', default=5,  dest='repeat', type=int, help='test count')
     p.add_argument('-o', dest="outpreffix", help="all the log will be stored under it", default="defaultname")
