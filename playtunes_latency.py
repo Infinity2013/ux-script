@@ -79,12 +79,14 @@ def main():
     repeat = 5
     
     resfd = open("resfile", "w")
+    outputList = []
+    inputList = []
     
     while (index < repeat):
         res = doCase(index)
         content = "index %d:\n  outpt: %d - %d = %d ms\n  input: %d - %d = %d ms\n" % (index, res[0], res[2], res[0] - res[2], res[1], res[3], res[1] - res[3])
         outputList.append(res[0] - res[2])
-        intputList.append(res[1] - res[3])
+        inputList.append(res[1] - res[3])
         print content
         resfd.write(content)
         index += 1
