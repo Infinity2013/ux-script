@@ -9,11 +9,16 @@ from argparse import ArgumentParser
 from mail import send_email
 import adbhelper
 from update import versioncheck
+from uiautomator import device as d
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
 TAGS = "gfx wm am input view res freq dalvik"
-SYSTRACE_FLAG = True 
+SYSTRACE_FLAG = False 
 
+
+coornidate_scale_dic = {
+    "malata8": [1.5, 0.7],
+    }
 def progressbar(current):
     barcontent = "===" * current
     content = ("[%-30s] %d/10\r") % (barcontent, current) 
@@ -153,13 +158,16 @@ def main():
 def doQALaunchTime(qaArgs):
     versioncheck()
 
-    x = qaArgs.get("x")
-    y = qaArgs.get("y")
+    uiobject_name = qaArgs.get("uiobject_name")
+    bounds = d(text=uiobject_name).info.get("bounds")
+    x = (bounds.get("left") + bounds.get("right")) / 2
+    y = (bounds.get("top") + bounds.get("bottom")) / 2
+
     layer = qaArgs.get("layer")
-    duration = qaArgs.get("time")
+    duration = qaArgs.get("sleep_time")
     packageName = qaArgs.get("packageName")
-    repeatCount = qaArgs.get("repeatCount")
-    outputName = qaArgs.get("outputfile")
+    repeatCount = qaArgs.get("repeat")
+    outputName = qaArgs.get("outName")
     touchscreen = getTouchNode()
     outfd = open(outputName, "w")
     getLaunchTime(x, y, layer, touchscreen, duration)
@@ -176,9 +184,6 @@ def doQALaunchTime(qaArgs):
         os.system("adb shell dumpsys SurfaceFlinger --latency-clear")
         start_tracing(TAGS)
         res = getLaunchTime(x, y, layer, touchscreen, duration)
-        meminfo = adbhelper.dumpMemInfo(packageName)
-        if meminfo != None:
-            writeList(meminfo, "%s\(%d\)_%d.mem" % (outputName, res, index))
         content = "index %d: %d ms" % (index, res)
         print content
         index +=1
@@ -186,7 +191,6 @@ def doQALaunchTime(qaArgs):
 #amstop(packageName)
         removeFromLRU()
 #        clearCache(packageName)
-        time.sleep(SLEEP_TIME_TO_BE_STABLE)
         stop_tracing("%s\(%d\)_%d.html" % (outputName, res, index))
     outfd.write(content)
     outfd.write("\n")

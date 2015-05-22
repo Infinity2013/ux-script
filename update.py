@@ -13,6 +13,7 @@ def formatcheck(string):
         return True
 
 def versioncheck():
+    return
     if platform.system() != "Linux":
         return
     clog.v("Checking updates!")
