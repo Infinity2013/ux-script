@@ -1,93 +1,122 @@
 #!/usr/bin/env python
 import os
 import sys
-import subprocess 
+import subprocess
 import re
 import math
 import time
-from argparse import ArgumentParser
 from mail import send_email
-import adbhelper
-from update import versioncheck
+from adb import adb
+from infocollector import collector as ic
+from mysqlwrapper import wrapper as sw
 from uiautomator import device as d
+from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
-TAGS = "gfx wm am input view res freq dalvik"
-SYSTRACE_FLAG = False 
+TAGS = "gfx wm am input view freq freq dalvik sched"
+SYSTRACE_FLAG = False
+
+'''
+cur = os.getcwd()
+systrace = cur/systrace
+logcat = cur/logcat
+dmesg = cur/dmesg
+'''
+work_path_dict = {}
+
+def checkandcreate(dir):
+    if not os.path.exists(dir):
+        os.mkdir(dir)
+    return
+
+def init_dir():
+    global work_path_dict
+    work_path_dict['cur'] = os.getcwd()
+    work_path_dict['systrace'] = "%s/systrace" % work_path_dict.get('cur')
+    work_path_dict['logcat'] = "%s/logcat" % work_path_dict.get('cur')
+    work_path_dict['dmesg'] = "%s/dmesg" % work_path_dict.get('cur')
+    for key in work_path_dict.keys():
+        if key != 'cur':
+            checkandcreate(work_path_dict.get(key))
 
 
-coornidate_scale_dic = {
-    "malata8": [1.5, 0.7],
-    }
-def progressbar(current):
-    barcontent = "===" * current
-    content = ("[%-30s] %d/10\r") % (barcontent, current) 
-    sys.stdout.write(content)
-    sys.stdout.flush()
+def dump_logcat(name):
+    os.chdir(work_path_dict.get('logcat'))
+    with open(name, "w") as f:
+        f.write(adb.cmd("logcat -v threadtime -d").communicate()[0])
+    os.chdir(work_path_dict.get('cur'))
+
+
+def clear_logcat():
+    adb.cmd("locat -c").communicate()
+
+def dump_dmesg(name):
+    os.chdir(work_path_dict.get('dmesg'))
+    with open(name, "w") as f:
+        f.write(adb.cmd("shell dmesg").communicate()[0])
+    os.chdir(work_path_dict.get('cur'))
+
+
+def get_coordinate_precision():
+    precision = {}
+    out = adb.cmd("shell dumpsys input").communicate()[0].splitlines()
+    for line in out:
+        if "XPrecision" in line:
+            precision['x'] = float(line.split(":")[-1])
+        elif "YPrecision" in line:
+            precision['y'] = float(line.split(":")[-1])
+        else:
+            continue
+    return precision
+
 
 def start_tracing(tags):
     if SYSTRACE_FLAG:
-        cmd = "adb shell \"atrace --async_start %s\"" % (tags)
-        os.system(cmd)
+        adb.cmd("shell \"atrace %s --async_start\"" % (tags)).communicate()
+
 
 def stop_tracing(out):
     if SYSTRACE_FLAG:
-        cmd = "adb shell \"atrace --async_dump -z\" > out.trace"
-        os.system(cmd)
+        os.chdir(work_path_dict.get('systrace'))
+        with open("out.trace", "w") as f:
+            f.write(adb.cmd("shell \"atrace --async_dump -z\"").communicate()[0])
         cmd = "systrace.py --from-file=out.trace -o %s" % out
         os.system(cmd)
-
-
-def clearCache(package):
-    cmd = "adb shell rm -rf /data/data/%s/cache" % package
-    os.system(cmd)
+        os.chdir(work_path_dict.get('cur'))
 
 def removeFromLRU():
-    p = subprocess.Popen("adb shell getprop ro.build.version.release", shell = True, stdout = subprocess.PIPE)
-    version = p.stdout.readline().strip()
-    os.system("adb shell input keyevent 187")
+    adb.cmd("shell input keyevent 187").communicate()
     time.sleep(1)
-#if "4" in version:
-#        os.system("adb shell input swipe 183 1096 726 1129")
-#    else:
-    os.system("adb shell input swipe 200 674 700 674 250")
+    adb.cmd("shell input swipe 200 674 700 674 250").communicate()
     time.sleep(1)
+
 
 def amstop(packageName):
-    cmd = "adb shell am force-stop %s" % packageName
-    os.system(cmd)
+    adb.cmd("shell am force-stop %s" % packageName).communicate()
     time.sleep(1)
 
 
-'''
-input:
-[Info]: Gesture started at -7635284 - 134518601  (638381583516)
-output:
-638381583516
-'''
 def getStartpoint(touchscreen, x, y):
-    cmd = "adb shell /data/eventHunter -i %s -g TOUCH -p %d -q %d -t B" % (touchscreen, x, y)
-    p = subprocess.Popen(cmd, shell = True, stdout = subprocess.PIPE)
-    resContent = p.stdout.readline().strip()
-    if re.findall("\(\d*", resContent) != []:
-        resContent = resContent.split("(")[1].strip()[:-1]
+    out = adb.cmd("shell /data/eventHunter -i %s -g TOUCH -p %d -q %d -t B" % (
+        touchscreen, x, y)).communicate()[0].splitlines()[0].strip()
+    if re.findall("\(\d*", out) != []:
+        out = out.split("(")[1].strip()[:-1]
     else:
         print "Error: make sure /data/eventHuner exists."
         sys.exit()
-    return long(resContent)
+    return long(out)
+
 
 def getEndpoint(layer):
-    cmd = "adb shell dumpsys SurfaceFlinger --latency %s" % (layer)
-    p = subprocess.Popen(cmd, shell = True, stdout= subprocess.PIPE)
-    resContent = p.stdout.readlines()
+    resContent = adb.cmd("shell dumpsys SurfaceFlinger --latency %s" % (layer)).communicate()[0].splitlines()
     endpoint = 0
     length = len(resContent)
     for i in range(length):
         if re.findall("0\s*0\s*0", resContent[i]) == [] and i != 0 and i != length - 1:
             endpoint = long(resContent[i].split()[1])
             break
-
     return endpoint
+
 
 def getLaunchTime(x, y, layer, touchscreen, duration):
     startpoint = getStartpoint(touchscreen, x, y)
@@ -100,10 +129,9 @@ def getLaunchTime(x, y, layer, touchscreen, duration):
 
     return launchtime
 
+
 def getTouchNode():
-    devices_info_cmd = "adb shell cat /proc/bus/input/devices"
-    p = subprocess.Popen(devices_info_cmd, shell = True, stdout = subprocess.PIPE)
-    devices_info_list = p.stdout.readlines()
+    devices_info_list = adb.cmd("shell cat /proc/bus/input/devices").communicate()[0].splitlines()
     '''
     something like this
     I: Bus=0018 Vendor=0000 Product=0000 Version=0000
@@ -119,7 +147,7 @@ def getTouchNode():
     position = 0
 
     for item in devices_info_list:
-        if "touch" in item or "ts"  in item or "ft5x0x" in item:
+        if "touch" in item or "ts" in item or "ft5x0x" in item:
             position = devices_info_list.index(item)
             break
     '''
@@ -138,60 +166,61 @@ def getTouchNode():
     else:
         print "Error: counldn't find touch pos!"
         return None
-def main():
-    global DBG
-    p = ArgumentParser(usage='qalaunchtime.py -d -f input -o output -d delay', description='Author wxl')
-    p.add_argument('-d', default=0,  dest='debug', action="store_true", help='enable debug info')
-    p.add_argument('-o', dest="output", default="output", help="output filename")
-    p.add_argument('-f', dest="input", help = "input filename")
-    p.add_argument('-t', dest="time", default = 4, help = "the time of launch")
-    p.add_argument('-r', dest="repeatCount", default = 5, help = "reapeatCount")
-    args = p.parse_known_args(sys.argv)
-
-    DBG = args[0].debug
-    outputfile = args[0].output
-    inputfile = args[0].input
-    time = int(args[0].time)
-    repeatCount = int(args[0].repeatCount)
 
 
 def doQALaunchTime(qaArgs):
-    versioncheck()
-
     uiobject_name = qaArgs.get("uiobject_name")
     bounds = d(text=uiobject_name).info.get("bounds")
     x = (bounds.get("left") + bounds.get("right")) / 2
     y = (bounds.get("top") + bounds.get("bottom")) / 2
+    x = x * get_coordinate_precision().get('x')
+    y = y * get_coordinate_precision().get('y')
 
     layer = qaArgs.get("layer")
     duration = qaArgs.get("sleep_time")
     packageName = qaArgs.get("packageName")
     repeatCount = qaArgs.get("repeat")
     outputName = qaArgs.get("outName")
+    systrace = qaArgs.get("systrace")
+    global SYSTRACE_FLAG, TAGS
+    if systrace != "":
+        SYSTRACE_FLAG = True
+    if systrace not in ("", "1"):
+        TAGS = " ".join(systrace)
     touchscreen = getTouchNode()
     outfd = open(outputName, "w")
     getLaunchTime(x, y, layer, touchscreen, duration)
-#    amstop(packageName)
-    removeFromLRU()
+    #removeFromLRU()
+    amstop(packageName)
 
     resList = []
     index = 0
     content = "layer: %s" % layer
     print content
+    init_dir()
 
     while (index < repeatCount):
-       # progressbar(index + 1)
-        os.system("adb shell dumpsys SurfaceFlinger --latency-clear")
+        adb.cmd("shell dumpsys SurfaceFlinger --latency-clear")
+        clear_logcat()
         start_tracing(TAGS)
+        dbinfo = ic.collect(packageName)
+        dbinfo['name'] = packageName.split(".")[-1]  # i.e com.android.settings name: settings
         res = getLaunchTime(x, y, layer, touchscreen, duration)
+        dbinfo["value"] = res
         content = "index %d: %d ms" % (index, res)
         print content
-        index +=1
+        index += 1
         resList.append(res)
-#amstop(packageName)
-        removeFromLRU()
-#        clearCache(packageName)
+        #removeFromLRU()
+        amstop(packageName)
+        url = "%s/%s(%d)_%d.html" % (os.getcwd(), outputName, res, index)
+        if SYSTRACE_FLAG is True:
+            dbinfo["url"] = url
+        sw.insert("launch", dbinfo)
         stop_tracing("%s\(%d\)_%d.html" % (outputName, res, index))
+        dump_logcat("%s\(%d\)_%d.logcat" % (outputName, res, index))
+        dump_dmesg("%s\(%d\)_%d.dmesg" % (outputName, res, index))
+
     outfd.write(content)
     outfd.write("\n")
 
@@ -206,11 +235,11 @@ def doQALaunchTime(qaArgs):
         outfd.write("\n")
     average = sum / len(resList)
     content = "average: %d ms" % (average)
-    mailmsg.append(content)    
+    mailmsg.append(content)
     print content
     outfd.write(content)
     outfd.write("\n")
-    
+
     resList.sort()
     content = "median = %d ms" % (resList[(len(resList) + 1) / 2])
     mailmsg.append(content)
@@ -221,15 +250,16 @@ def doQALaunchTime(qaArgs):
     outfd.close()
 
     rsd = RSD(resList)
-    
 
     mailmsg = ("<br/>").join(mailmsg)
     mailargs = {}
     mailargs["msg"] = mailmsg
-    mailargs["subject"] = "%s(%s - %s) : %d ms - %d " % (packageName, adbhelper.getDeviceInfo(), adbhelper.getPackageVersion(packageName), average, rsd)
+    mailargs["subject"] = "%s(%s_%s - %s) : %d ms - %d " % (packageName,
+            ic.board(), ic.release(), ic.pversion(packageName), average, rsd)
     send_email(mailargs)
 
     return rsd
+
 
 def writeList(l, out):
     fd = open(out, "w")
@@ -248,13 +278,9 @@ def RSD(arr):
     squaresum = 0
 
     for i in arr:
-        squaresum += (i - average)*(i - average)
-    
+        squaresum += (i - average) * (i - average)
+
     SD = math.sqrt((squaresum / (n - 1)))
     RSD = (SD / average) * 100
 
     return RSD
-
-
-if __name__ == "__main__":
-    print RSD([423, 5423, 5423, 6,5 , 54277, 76,222])

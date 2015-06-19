@@ -97,7 +97,7 @@ def getKernelWakeupTime(dmesgoutput):
     for log in dmesgLogs:
         dmesgElement = loghelper.parse2Element(log, "dmesg")
     
-        if "resume from mwait" in dmesgElement.content or "Suspended for" in dmesgElement.content:
+        if "Enabling non-boot CPUs" in dmesgElement.content or "Suspended for" in dmesgElement.content:
             startpoint = dmesgElement.ts
         elif "Restarting tasks" in dmesgElement.content:
             endpoint = dmesgElement.ts

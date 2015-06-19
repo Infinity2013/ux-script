@@ -7,6 +7,18 @@ import subprocess
 import time
 
 PARSE_DBG = False 
+
+class StraceElement():
+
+    def __init__(self, ts, callname, fd, ret):
+        self.ts = ts
+        self.callname = callname
+        self.fd = fd
+        self.ret = ret
+
+    def dump(self):
+        print "%f %s(%s) = %s" % (self.ts, self.callname, self.fd, self.ret)
+
 '''
 equicksearchbox-2525  ( 2525) [000] ...1 10007.451469: tracing_mark_write: B|2525|activityPause\n\
 '''
@@ -66,6 +78,8 @@ def parse2Element(log, type):
         return parse2LogcatElement(log)
     elif type == "dmesg":
         return parse2DmesgElement(log)
+    elif type == "strace":
+        return parse2StraceElement(log)
     else:
         print "Error: unsupported type %s" % type
         sys.exit()
@@ -156,3 +170,28 @@ def parse2TraceElement(traceLog):
             tagName = traceLogContent[2].strip()
 
     return TraceElement(ts, pid, flag, tagName)
+
+def parse2StraceElement(strace):
+    strace = strace.strip()
+    strace = strace.split("=")
+    ret = int(strace[-1])
+    leftcurve = strace[0].index("(")
+    firstcomma = strace[0].index(",")
+    fd = strace[0][leftcurve + 1: firstcomma]
+    firstspace = strace[0].index(" ")
+    callname = ""
+    ts = 0
+    if firstspace > leftcurve:
+        '''means no ts'''
+        callname = strace[0][:leftcurve]
+        ts = 0
+    else:
+        callname = strace[0][firstspace + 1:leftcurve]
+        ts = float(strace[0][:firstspace]) * 1000
+
+    return StraceElement(ts, callname, fd, ret)
+
+
+        
+    
+

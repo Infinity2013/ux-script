@@ -26,6 +26,24 @@ import keyword
 DBG = True
 tsKeyWords = ["touch", "ts", "ft5x0x"]
 
+
+def pid(pName):
+    pid = -1
+
+    p = subprocess.Popen("adb shell ps", shell=True, stdout=subprocess.PIPE)
+    content = p.stdout.readlines()
+    for line in content:
+        if pName in line:
+            t = line.strip().split()[1].strip()
+            pid = int(t)
+            break
+    if pid == -1:
+        print "No process named %s" % pName
+        sys.exit()
+    return pid
+            
+    
+     
 def killFromLRU():
     p = subprocess.Popen("adb shell getprop ro.build.version.release", shell = True, stdout = subprocess.PIPE)
     version = p.stdout.readline().strip()

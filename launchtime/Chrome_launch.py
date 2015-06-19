@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 from argparse import ArgumentParser
 import sys
-script_root = "%s/../" % (sys.path[0])
-if script_root not in sys.path:
-    sys.path.append(script_root)
 from qalaunchtime import doQALaunchTime
-import adbhelper
+from infocollector import collector as ic
 
 p = ArgumentParser(usage='xxx_launch.py -t n -r n', description='Author wxl')
 p.add_argument('-t', default=2,  dest='slee_time', type=int, help='sleep_time')
 p.add_argument('-r', default=10,  dest='repeat', type=int, help='repeat')
+p.add_argument('--systrace', default='', dest='systrace', nargs='+', help='systrace tags')
 a = p.parse_known_args(sys.argv)
 
 args = {}
 args["layer"] = "SurfaceView"
 args["packageName"] = "com.android.chrome"
-args["outName"] = "%s-%s.launch" % ("Chrome", adbhelper.getDeviceInfo())
+args["outName"] = "%s_%s-%s.launch" % ("Chrome", ic.board(), ic.release())
 args["uiobject_name"] = "Chrome"
 args["repeat"] = a[0].repeat
 args["sleep_time"] = a[0].slee_time
+args["systrace"] = a[0].systrace
 doQALaunchTime(args)

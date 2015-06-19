@@ -71,3 +71,5 @@ class clog:
                 self.CLOG_LEVEL |= self.CLOG_LEVEL_CRITICAL
             else:
                 print arg + "is not supported"
+colorlog = clog()
+colorlog.setLevel("v|e|c|w")

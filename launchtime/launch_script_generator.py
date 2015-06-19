@@ -3,6 +3,7 @@ import subprocess
 import os
 import sys
 import platform
+import re
 
 def getArgs():
     args = {}
@@ -10,11 +11,12 @@ def getArgs():
     packageName = raw_input("PackageName: ")
     uiobject_name = raw_input("UiobjectName: ")
     sleep_time = raw_input("SleepTime: ")
-    outName = "\"%s-%s.launch\" %s (\"%s\", adbhelper.getDeviceInfo())" % ("%s", "%s", "%", uiobject_name)
+    outName = "\"%s-%s_%s.launch\" %s (\"%s\", ic.board(), ic.release())" % ("%s", "%s", "%s", "%", uiobject_name)
     args["layer"] = layer
     args["packageName"] = packageName
     args["outName"] = outName
     args["uiobject_name"] = uiobject_name
+    uiobject_name = re.sub(r"\s+", "_", uiobject_name)
     args["sleep_time"] = sleep_time
     args["repeat"] = 10
     return args
@@ -38,14 +40,17 @@ def writeArgs(outfd, args):
         outfd.write(line)
     outfd.write("args[\"repeat\"] = a[0].repeat\n")
     outfd.write("args[\"sleep_time\"] = a[0].slee_time\n")
+    outfd.write("args[\"systrace\"] = a[0].systrace\n")
     outfd.write("doQALaunchTime(args)")
-        
+
 def writeEnding(outfd, args):
     line = "p = ArgumentParser(usage='xxx_launch.py -t n -r n', description='Author wxl')\n"
     outfd.write(line)
     line = "p.add_argument('-t', default=%s,  dest='slee_time', type=int, help='sleep_time')\n" % (args.get("sleep_time"))
     outfd.write(line)
     line = "p.add_argument('-r', default=%d,  dest='repeat', type=int, help='repeat')\n" % (args.get("repeat"))
+    outfd.write(line)
+    line = "p.add_argument('--systrace', default='', dest='systrace', nargs='+', help='systrace tags')\n"
     outfd.write(line)
     outfd.write("a = p.parse_known_args(sys.argv)\n")
 
@@ -69,4 +74,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

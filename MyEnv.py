@@ -20,7 +20,7 @@ def getMyPythonEnv(key):
     return envDic.get(key)
 
 def loadDic(dicPath):
-    global envDic    
+    global envDic
     fp = open(dicPath, "a+")
     envList = fp.readlines()
     '''
