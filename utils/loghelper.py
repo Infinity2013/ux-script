@@ -6,7 +6,7 @@ import sys
 import subprocess
 import time
 
-PARSE_DBG = False 
+PARSE_DBG = False
 
 class StraceElement():
 
@@ -27,6 +27,7 @@ class TraceElement():
     pid = 0
     flag = ""
     tagName = ""
+
     def __init__(self, ts, pid, flag, tagName):
         self.ts = ts
         self.pid = pid
@@ -41,12 +42,13 @@ class TraceElement():
 class DmesgElement():
     ts = 0
     content = ""
+
     def __init__(self, ts, content):
         self.ts = ts
         self.content = content
 
     def dump(self):
-        print ("[%f] %s") % (self.ts,self.content)
+        print ("[%f] %s") % (self.ts, self.content)
 
 class LogcatElement():
     ts = 0
@@ -55,6 +57,7 @@ class LogcatElement():
     tagType = ""
     tagName = ""
     tagContent = ""
+
     def __init__(self, ts, pid, tid, tagType, tagName, tagContent):
         self.ts = ts
         self.pid = pid
@@ -88,33 +91,11 @@ pattern:
 01-02 17:58:35.603  1982  2395 W SurfaceFlinger: Timed out waiting for hw vsync; faking it
 '''
 def parse2LogcatElement(logcatLog):
-    if not re.search("\d*:\d*:\d*.\d*", logcatLog):
+    r = re.match(r"\d+\-\d+\s(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})\.(?P<milli>\d{3})\s+(?P<pid>\d+)\s+(?P<tid>\d+)\s+(?P<type>\S)\s+(?P<tag>\S+):\s+(?P<content>.*$)", logcatLog)
+    if r is None:
         return LogcatElement(0, 0, 0, "", "", "")
-    splitList =logcatLog.strip().split()
-
-    ts = 0
-    tsList = splitList[1].split(":")
-    hour = int(tsList[0])
-    minute = int(tsList[1])
-    second = int(tsList[2].split(".")[0])
-    milliseccond = int(tsList[2].split(".")[1])
-    ts = (hour * 3600 + minute * 60 + second) * 1000 + milliseccond
-
-    pid = 0
-    pid = int(splitList[2])
-
-    tid = 0
-    tid = int(splitList[3])
-
-    tagType = ""
-    tagName = splitList[4]
-
-    tagName = ""
-    tagName = splitList[5][:-1]
-
-    tagContent = " ".join(splitList[6:])
-
-    return LogcatElement(ts, pid, tid, tagType, tagName, tagContent)
+    ts = (int(r.group("hour")) * 3600 + int(r.group("minute")) * 60 + int(r.group("second"))) * 1000 + int(r.group("milli"))
+    return LogcatElement(ts, int(r.group("pid")), int(r.group("tid")), r.group("type"), r.group("tag"), r.group("content"))
 
 
 def parse2DmesgElement(dmesgLog):
@@ -132,23 +113,20 @@ def parse2DmesgElement(dmesgLog):
     content = dmesgLog[index:].strip()
 
     if PARSE_DBG:
-        if ts == -1 or content == "":        
+        if ts == -1 or content == "":
             print "Error: can't parse %s" % dmesgLog
             sys.exit()
 
     return DmesgElement(ts, content)
 
 def parse2TraceElement(traceLog):
-    if re.search("\S*-[0-9]*\s*\([\s0-9]*\)", traceLog) == None:
+    if re.search("\S*-[0-9]*\s*\([\s0-9]*\)", traceLog) is None:
         return TraceElement(-1, -1, "wrong", "wrong")
-          
     pid = re.search("\([\s0-9]*\)", traceLog)
     if pid:
         if PARSE_DBG:
             print pid.group(0)
         pid = int(pid.group(0)[1:-1])
-        
-    
     ts = re.search("\s[0-9]*.[0-9]*:", traceLog)
     if ts:
         if PARSE_DBG:
@@ -190,8 +168,3 @@ def parse2StraceElement(strace):
         ts = float(strace[0][:firstspace]) * 1000
 
     return StraceElement(ts, callname, fd, ret)
-
-
-        
-    
-
