@@ -91,63 +91,34 @@ pattern:
 01-02 17:58:35.603  1982  2395 W SurfaceFlinger: Timed out waiting for hw vsync; faking it
 '''
 def parse2LogcatElement(logcatLog):
-    r = re.match(r"\d+\-\d+\s(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})\.(?P<milli>\d{3})\s+(?P<pid>\d+)\s+(?P<tid>\d+)\s+(?P<type>\S)\s+(?P<tag>\S+):\s+(?P<content>.*$)", logcatLog)
+    r = re.match(r"\d+\-\d+\s(?P<hour>\d{2}):(?P<minute>\d{2}):(?P<second>\d{2})\.(?P<milli>\d{3})\s+(?P<pid>\d+)\s+(?P<tid>\d+)\s+(?P<type>\S)\s+(?P<tag>\S+)\s*:\s+(?P<content>.*$)", logcatLog)
     if r is None:
         return LogcatElement(0, 0, 0, "", "", "")
     ts = (int(r.group("hour")) * 3600 + int(r.group("minute")) * 60 + int(r.group("second"))) * 1000 + int(r.group("milli"))
     return LogcatElement(ts, int(r.group("pid")), int(r.group("tid")), r.group("type"), r.group("tag"), r.group("content"))
 
-
+'''
+<6>[    0.115842] Last level dTLB entries: 4KB 128, 2MB 16, 4MB 16, 1GB 0
+'''
 def parse2DmesgElement(dmesgLog):
-    ts = -1
-    res = re.search("\[[0-9\s.]*\]", dmesgLog)
-    if res:
-        if PARSE_DBG:
-            print res.group(0)
-        ts = int(float(res.group(0)[1:-1]) * 1000)
-    else:
-        return DmesgElement(0, "")
+    r = re.match(r"<\d+>\[(?P<ts>\s*\d+.\d+)\]\s(?P<content>.*$)", dmesgLog)
+    if r is None:
+        return DmesgElement(0, "wrong")
+    return DmesgElement(float(r.group("ts")) * 1000, r.group("content"))
 
-    content = ""
-    index = dmesgLog.index("]") + 2
-    content = dmesgLog[index:].strip()
-
-    if PARSE_DBG:
-        if ts == -1 or content == "":
-            print "Error: can't parse %s" % dmesgLog
-            sys.exit()
-
-    return DmesgElement(ts, content)
-
+'''
+surfaceflinger-179   (  179) [003] d..3   471.432013: sched_wakeup: comm=Binder_2 pid=198 prio=120 success=1 target_cpu=002\n\
+surfaceflinger-179   (  179) [003] ...1   471.432036: tracing_mark_write: B|179|rebuildLayerStacks\n\
+'''
 def parse2TraceElement(traceLog):
-    if re.search("\S*-[0-9]*\s*\([\s0-9]*\)", traceLog) is None:
+    r = re.match(r"<*(?P<tname>\w+)-(?P<tid>\d+)\s+\(\s*(?P<pid>\d+)\)\s+\[(?P<cpuid>\d+)\]\s+.{4}\s+(?P<ts>\d+\.\d+):\s+(?P<type>\w+):\s+(?P<content>.*$)", traceLog)
+    if r is None:
         return TraceElement(-1, -1, "wrong", "wrong")
-    pid = re.search("\([\s0-9]*\)", traceLog)
-    if pid:
-        if PARSE_DBG:
-            print pid.group(0)
-        pid = int(pid.group(0)[1:-1])
-    ts = re.search("\s[0-9]*.[0-9]*:", traceLog)
-    if ts:
-        if PARSE_DBG:
-            print ts.group(0)
-        ts = int(float(ts.group(0)[1:-1]) * 1000)
-
-    flag = ""
-    tagName = ""
-    traceLogContent = re.search(r"tracing_mark_write:\s*\S(\|[0-9]*\|\S*){0,1}", traceLog)
-    if traceLogContent:
-        if PARSE_DBG:
-            print traceLogContent.group(0)
-        traceLogContent = traceLogContent.group(0).strip().split(":")[1].split("|")
-        if len(traceLogContent) == 1:
-            flag = traceLogContent[0].strip()
-            tagName = ""
-        else:
-            flag = traceLogContent[0].strip()
-            tagName = traceLogContent[2].strip()
-
-    return TraceElement(ts, pid, flag, tagName)
+    if r.group("type") == "tracing_mark_write":
+        t = r.group("content").strip().split("|")
+        return TraceElement(float(r.group("ts")) * 1000, int(r.group("pid")), t[0], t[-1])
+    else:
+        return TraceElement(-1, -1, "unsupported", "unsupported")
 
 def parse2StraceElement(strace):
     strace = strace.strip()

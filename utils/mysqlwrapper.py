@@ -1,5 +1,9 @@
-import MySQLdb
 import os
+MYSQL = False
+if os.environ.get("uxsql") == "MySQLdb":
+    import MySQLdb
+    MYSQL = True
+
 
 def addquote(s):
     if isinstance(s, basestring):
@@ -10,6 +14,8 @@ def addquote(s):
 class MySQLdbWrapper():
 
     def __init__(self):
+        if not MYSQL:
+            return
         conn = MySQLdb.connect(host='localhost', user='root', passwd='1', port=3306)
         cur = conn.cursor()
         conn.select_db("ux")
@@ -17,15 +23,21 @@ class MySQLdbWrapper():
         self.conn = conn
 
     def insert(self, table, kargs):
+        if not MYSQL:
+            return
         cmd = "insert into %s (%s) values(%s)" % (table, ", ".join(kargs.keys()), ", ".join(map(addquote, kargs.values())))
         self.cur.execute(cmd)
         self.conn.commit()
 
     def close(self):
+        if not MYSQL:
+            return
         self.cur.close()
         self.conn.close()
 
     def dump(self, table):
+        if not MYSQL:
+            return
         fd = open("%s/Documents/%s.csv" % (os.environ.get("HOME"), table), "w")
         cmd = "select * from %s" % table
         self.cur.execute(cmd)

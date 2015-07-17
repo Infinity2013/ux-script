@@ -111,10 +111,14 @@ def getEndpoint(layer):
     resContent = adb.cmd("shell dumpsys SurfaceFlinger --latency %s" % (layer)).communicate()[0].splitlines()
     endpoint = 0
     length = len(resContent)
+    firstFrameIdx = 0
     for i in range(length):
         if re.findall("0\s*0\s*0", resContent[i]) == [] and i != 0 and i != length - 1:
             endpoint = long(resContent[i].split()[1])
+            firstFrameIdx = i
             break
+    if long(resContent[firstFrameIdx - 1].split()[0]) != 0:
+        print "Warning: firatFrame is gone!"
     return endpoint
 
 
@@ -167,31 +171,45 @@ def getTouchNode():
         print "Error: counldn't find touch pos!"
         return None
 
+def killproc(t, pname):
+    if t not in ["lru", "amstop"]:
+        raise ValueError("%s is not supported" % t)
+    if t == "lru":
+        removeFromLRU()
+    elif t == "amstop":
+        amstop(pname)
 
-def doQALaunchTime(qaArgs):
-    uiobject_name = qaArgs.get("uiobject_name")
+def get_coordinate(uiobject_name):
     bounds = d(text=uiobject_name).info.get("bounds")
     x = (bounds.get("left") + bounds.get("right")) / 2
     y = (bounds.get("top") + bounds.get("bottom")) / 2
     x = x * get_coordinate_precision().get('x')
     y = y * get_coordinate_precision().get('y')
+    return x, y
 
+def doQALaunchTime(qaArgs):
+    uiobject_name = qaArgs.get("uiobject_name")
+    
     layer = qaArgs.get("layer")
     duration = qaArgs.get("sleep_time")
     packageName = qaArgs.get("packageName")
     repeatCount = qaArgs.get("repeat")
     outputName = qaArgs.get("outName")
-    systrace = qaArgs.get("systrace")
+    systrace = qaArgs.get("systrace", "")
+    evallist = qaArgs.get("evallist")
+    finishtype = qaArgs.get("finishtype", "amstop")
+    time_for_stable = qaArgs.get("stabletime", 5)
     global SYSTRACE_FLAG, TAGS
     if systrace != "":
         SYSTRACE_FLAG = True
-    if systrace not in ("", "1"):
+    if systrace not in (["1"], ""):
         TAGS = " ".join(systrace)
     touchscreen = getTouchNode()
     outfd = open(outputName, "w")
-    getLaunchTime(x, y, layer, touchscreen, duration)
-    #removeFromLRU()
-    amstop(packageName)
+    if qaArgs.get("skip") == None:
+        x, y = get_coordinate(uiobject_name)
+        getLaunchTime(x, y, layer, touchscreen, duration)
+        killproc(finishtype, packageName)
 
     resList = []
     index = 0
@@ -202,17 +220,20 @@ def doQALaunchTime(qaArgs):
     while (index < repeatCount):
         adb.cmd("shell dumpsys SurfaceFlinger --latency-clear")
         clear_logcat()
+        if evallist != None:
+            for line in evallist:
+                eval(line)
         start_tracing(TAGS)
         dbinfo = ic.collect(packageName)
         dbinfo['name'] = packageName.split(".")[-1]  # i.e com.android.settings name: settings
+        x, y = get_coordinate(uiobject_name)
         res = getLaunchTime(x, y, layer, touchscreen, duration)
         dbinfo["value"] = res
         content = "index %d: %d ms" % (index, res)
         print content
         index += 1
         resList.append(res)
-        #removeFromLRU()
-        amstop(packageName)
+        killproc(finishtype, packageName)
         url = "%s/%s(%d)_%d.html" % (os.getcwd(), outputName, res, index)
         if SYSTRACE_FLAG is True:
             dbinfo["url"] = url
@@ -220,6 +241,7 @@ def doQALaunchTime(qaArgs):
         stop_tracing("%s\(%d\)_%d.html" % (outputName, res, index))
         dump_logcat("%s\(%d\)_%d.logcat" % (outputName, res, index))
         dump_dmesg("%s\(%d\)_%d.dmesg" % (outputName, res, index))
+        time.sleep(time_for_stable)
 
     outfd.write(content)
     outfd.write("\n")
