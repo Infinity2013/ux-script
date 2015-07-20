@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en-US">
+<head>
+    
+    <title>Smashing Magazine — For Professional Web Designers and Developers</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <meta name="alexaVerifyID" content="OsdEeUmLBR57iIbbr9AywCox2-0" />
+    
+    <meta charset="UTF-8">
+
+    <!-- Win8 Tile -->
+    <meta name="application-name" content="Smashing Magazine"/><meta name="msapplication-TileColor" content="#e53b2c"/><meta name="msapplication-square70x70logo" content="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/smashing-windows-icon-70-70.png"/><meta name="msapplication-square150x150logo" content="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/smashing-windows-icon-150-150.png"/><meta name="msapplication-wide310x150logo" content="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/smashing-windows-icon-310-150.png"/><meta name="msapplication-square310x310logo" content="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/smashing-windows-icon-310-310.png"/><meta name="msapplication-notification" content="frequency=30;polling-uri=http://notifications.buildmypinnedsite.com/?feed=http://rss1.smashingmagazine.com/feed/&amp;id=1;polling-uri2=http://notifications.buildmypinnedsite.com/?feed=http://rss1.smashingmagazine.com/feed/&amp;id=2;polling-uri3=http://notifications.buildmypinnedsite.com/?feed=http://rss1.smashingmagazine.com/feed/&amp;id=3;polling-uri4=http://notifications.buildmypinnedsite.com/?feed=http://rss1.smashingmagazine.com/feed/&amp;id=4;polling-uri5=http://notifications.buildmypinnedsite.com/?feed=http://rss1.smashingmagazine.com/feed/&amp;id=5; cycle=1"/>
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon-precomposed" href="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/apple-touch-icon-precomposed.png" /><link rel="apple-touch-icon-precomposed" sizes="57x57" href="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/apple-touch-icon-57x57-precomposed.png" /><link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/apple-touch-icon-72x72-precomposed.png" /><link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/apple-touch-icon-114x114-precomposed.png" /><link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/apple-touch-icon-144x144-precomposed.png" />
+
+    <!-- RSS & Pingback -->
+    <link rel="alternate" type="application/atom+xml" title="News-Feed" href="http://rss1.smashingmagazine.com/feed/" /><link rel="pingback" href="http://www.smashingmagazine.com/xmlrpc.php" />
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/favicon.ico" />
+    
+    <script type="text/javascript">var globals = {"wp_home":"http:\/\/mobile.smashingmagazine.com","wp_theme_url":"http:\/\/media.smashingmagazine.com\/wp-content\/themes\/smashingv4","wp_media_uploads_url":"http:\/\/media.smashingmagazine.com\/wp-content\/uploads","wp_www_smash_url":"http:\/\/www.smashingmagazine.com"};</script>
+
+    
+<!-- This site is optimized with the Yoast WordPress SEO plugin v1.2.2 - http://yoast.com/wordpress/seo/ -->
+<meta name="description" content="Smashing Magazine is an online magazine for professional Web designers and developers, with a focus on useful techniques, best practices and valuable resources."/>
+<link rel="canonical" href="http://www.smashingmagazine.com/" />
+<link rel="next" href="http://www.smashingmagazine.com/page/2/" />
+<link rel="author" href="SmashingMagazine"/>
+<meta name="google-site-verification" content="x8Gef-o0wXIZBVOLDRxF3x0YmO9MsN7naJHBRRBeBhA" />
+<meta name="msvalidate.01" content="6E3AD52DC176461A3C81DD6E98003BC9" />
+<!-- / Yoast WordPress SEO plugin. -->
+
+<link type="application/atom+xml" rel="alternate" title="Smashing Magazine &raquo; Feed" href="http://rss1.smashingmagazine.com/feed/" />
+
+<link rel='stylesheet' id='fontdeck-css'  href='http://f.fontdeck.com/s/css/qjAxanDb3GzL8rviVV7PWUySExw/*.smashingmagazine.com/12777.css' type='text/css' media='screen, print' />
+<link rel='stylesheet' id='main-css'  href='http://www.smashingmagazine.com/wp-content/themes/smashingv4/stylesheets/main.min.css?ver=2014.2.4' type='text/css' media='all' />
+<script type='text/javascript' src='http://www.smashingmagazine.com/wp-includes/js/jquery/jquery.js?ver=1.8.3'></script>
+<script type='text/javascript' src='http://www.smashingmagazine.com/wp-content/themes/smashingv4/javascripts/thirdparty.min.js?ver=4.5.3'></script>
+
+
+    <!--[if IE 8]>
+        <link rel="stylesheet" media="all" type="text/css" href="http://www.smashingmagazine.com/wp-content/themes/smashingv4/stylesheets/ie8-nu.css" />
+        <script type="text/javascript" src="http://www.smashingmagazine.com/wp-content/themes/smashingv4/javascripts/respond.min.js"></script>
+    <![endif]-->
+
+    <script type="text/javascript" src="http://auslieferung.commindo-media-ressourcen.de/www/delivery/spcjs.php?id=4&amp;block=1&amp;blockcampaign=1&amp;withtext=1"></script>
+    <script type='text/javascript'>/* <![CDATA[ */  ads_postload();   /* ]]> */</script>
+</head>
+<body class="home blog www-section">
+
+	<a id="top"></a>
+        <nav class="toplevel clearfix">
+            <div class="mini">
+                <h1><span class="screen-reader">Smashing Magazine</span><a href="http://www.smashingmagazine.com/"><img src="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/logo.png" alt="Smashing Magazine" title="Jump to the front page" /></a></h1>
+            </div>
+
+            <div class="mobile-nav-buttons">
+                <a href="#mobile-navigation-footer" class="nav-toggle-button">Menu</a> <a href="#mobile-search-footer" class="search-toggle-button">Search</a>
+            </div>
+
+            <ul class="network clearfix">           
+                <li class="current"><a href="http://www.smashingmagazine.com/"><img src="http://www.smashingmagazine.com/wp-content/themes/smashingv4/images/logo.png" alt="Smashing Magazine" title="Jump to the front page" /></a></li>
+                <li><a href="http://www.smashingmagazine.com/books/">Books</a></li>
+                <li><a href="http://www.smashingmagazine.com/ebooks/">Library</a><a href="http://www.smashingmagazine.com/ebooks/" id="naviebookslink"><img id="littleebooksimage" src="http://media.smashingmagazine.com/themes/smashingv4/images/navilittlebook.png" height="46" width="36" alt="Smashing Library" /></a></li>
+                <li><a href="http://www.smashingmagazine.com/workshops/">Workshops</a></li>
+                <li><a href="http://jobs.smashingmagazine.com/">Job Board</a></li>
+            </ul>
+
+            <ul class="channels">
+                <li class="rss"><a href="http://rss1.smashingmagazine.com/feed/" title="Subscribe to our RSS-feed (1100K)">RSS</a></li>
+                <li class="facebook"><a href="http://www.facebook.com/smashmag" title="Join our Facebook page! (165k)">Facebook</a></li>
+                <li class="twitter"><a href="http://twitter.com/smashingmag" title="Follow us on Twitter! (748k)">Twitter</a></li>
+                <li class="newsletter"><a href="http://www.smashingmagazine.com/the-smashing-newsletter/" title="Subscribe to our Email Newsletter (168k)">Newsletter</a></li>
+            </ul>
+        </nav>
+
+<div id="container">
+    <div class="fluid clearfix">
+        <div class="grid clearfix">
+            <div class="mini-search wp-search-form clearfix" >           
+                <form id="search" method="get" action="http://www.smashingmagazine.com/search-results/" target="_top">
+                    <input name="q" type="text" placeholder="e.g. JavaScript" />
+                    <button class="search_submit" type="submit"><span class="first-type">Search</span></button>
+                    <input type="hidden" name="cx" value="partner-pub-6779860845561969:5884617103">
+                    <input type="hidden" name="cof" value="FORID:10">
+                    <input type="hidden" name="ie" value="UTF-8">
+                </form>
+            </div>
+            <div class="col sidebar">
+                <nav class="sections">
+                <ul class="clearfix">
+                    <li class="coding">
+                        <a href="http://coding.smashingmagazine.com">Coding</a>
+                        <ul>
+                            <li><a href="http://coding.smashingmagazine.com/tag/css/">CSS</a></li>
+                            <li><a href="http://coding.smashingmagazine.com/tag/html/">HTML</a></li>
+                            <li><a href="http://coding.smashingmagazine.com/tag/javascript/">JavaScript</a></li>
+                            <li><a href="http://coding.smashingmagazine.com/tag/techniques/">Techniques</a></li>
+                        </ul>
+                    </li>
+                    <li class="design">
+                        <a href="http://www.smashingmagazine.com/category/design/">Design</a>
+                        <ul>
+                            <li><a href="http://www.smashingmagazine.com/tag/web-design/">Web Design</a></li>
+                            <li><a href="http://www.smashingmagazine.com/tag/typography/">Typography</a></li>
+                            <li><a href="http://www.smashingmagazine.com/tag/inspiration/">Inspiration</a></li>
+                            <li><a href="http://www.smashingmagazine.com/tag/business/">Business</a></li>
+                        </ul>
+                    </li>
+                    <li class="community">
+                        <a href="http://mobile.smashingmagazine.com">Mobile</a>
+                        <ul>
+                            <li><a href="http://mobile.smashingmagazine.com/tag/responsive-design/">Responsive</a></li>
+                            <li><a href="http://mobile.smashingmagazine.com/tag/ios/">iPhone &amp; iPad</a></li>
+                            <li><a href="http://mobile.smashingmagazine.com/tag/android/">Android</a></li>
+                            <li><a href="http://mobile.smashingmagazine.com/tag/design-patterns/">Design Patterns</a></li>
+                        </ul>
+                    </li>
+                    <li class="graphics">
+                        <a href="http://www.smashingmagazine.com/category/graphics/">Graphics</a>
+                        <ul>
+                            <li><a href="http://www.smashingmagazine.com/tag/photoshop/">Photoshop</a></li>
+                            <li><a href="http://fireworks.smashingmagazine.com">Fireworks</a></li>
+                            <li><a href="http://www.smashingmagazine.com/tag/wallpapers/">Wallpapers</a></li>
+                            <li><a href="http://www.smashingmagazine.com/tag/freebies/">Freebies</a></li>
+                        </ul>
+                    </li>
+                    <li class="ux">
+                        <a href="http://uxdesign.smashingmagazine.com">UX Design</a>
+                        <ul>
+                            <li><a href="http://uxdesign.smashingmagazine.com/tag/usability/">Usability</a></li>
+                            <li><a href="http://uxdesign.smashingmagazine.com/tag/user-experience/">User Experience</a></li>
+                            <li><a href="http://uxdesign.smashingmagazine.com/tag/ui/">UI Design</a></li>
+                            <li><a href="http://uxdesign.smashingmagazine.com/tag/e-commerce/">E-Commerce</a></li>
+                        </ul>
+                    </li>
+                    <li class="wordpress">
+                        <a href="http://wp.smashingmagazine.com" class="clearfix"><span class="short">WP</span><span class="long"><span>Word</span><span>Press</span></span></a>
+                        <ul>
+                            <li><a href="http://wp.smashingmagazine.com/tag/essentials/">Essentials</a></li>
+                            <li><a href="http://wp.smashingmagazine.com/tag/techniques/">Techniques</a></li>
+                            <li><a href="http://wp.smashingmagazine.com/tag/plugins/">Plugins</a></li>
+                            <li><a href="http://wp.smashingmagazine.com/tag/themes/">Themes</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <br class="clearboth" />
+            </nav>
+        </div><!-- .col.sidebar -->
+        <div class="col main home">
+
+
+
+
+
+
+
+    
+<article  class="post-179682 post type-post status-publish format-standard hentry category-announcements category-events tag-community tag-conferences tag-inspiration post">
+
+	<h2><a href="http://www.smashingmagazine.com/2014/01/22/upcoming-web-design-events-jan-2014-jun-2014/" rel="bookmark" title="Read 'Upcoming Web Design Events (Jan. 2014 – Jun. 2014)'"><span class="catch_headline">Conferences Round-Up</span><span class="headline">Upcoming Web Design Events (Jan. 2014 – Jun. 2014)</span></a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://www.smashingmagazine.com/author/jan-constantin/?rel=author" title="Posts by Jan Constantin" >Jan Constantin</a></li>
+    <li id="logoedtarget" class="inline"></li>    <li class="date">January 22nd, 2014</li>
+            <li class="tags"><a href="http://www.smashingmagazine.com/tag/community/">Community</a>, <a href="http://www.smashingmagazine.com/tag/conferences/">Conferences</a>, <a href="http://www.smashingmagazine.com/tag/inspiration/">Inspiration</a></li>
+                <li class="comments"><a href="http://www.smashingmagazine.com/2014/01/22/upcoming-web-design-events-jan-2014-jun-2014/#comments" title="Comment on Upcoming Web Design Events (Jan. 2014 – Jun. 2014)">1 Comment</a> </li>
+        </ul>
+
+  <p>2013 has come and gone, delighting us with a plethora of inspirational, educational and fun conferences. You should start planning 2014 right now to make sure that you don't miss your chance to get away from your desk and <strong>meet some brilliant minds and peers</strong> — face to face!</p>
+
+<p><a href="http://www.smashingmagazine.com/2014/01/22/upcoming-web-design-events-jan-2014-jun-2014/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2014/01/conferences-in-2014.png" alt="Upcoming Web Design Events (Jan. 2014 – Jun. 2014) " title="Upcoming Web Design Events (Jan. 2014 – Jun. 2014) " width="500" height="352" /></a></p>
+
+<p>In this roundup of conferences, we are happy to present you all of the upcoming Web-related conferences, starting from January. This might be just the time to get a ticket to conferences in warmer climes! For now, we've included conferences up to June, so make sure you don’t miss your favorite one.</p>
+  <a href="http://www.smashingmagazine.com/2014/01/22/upcoming-web-design-events-jan-2014-jun-2014/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    
+<article  class="post-178633 post type-post status-publish format-standard hentry category-opinion-column-category tag-community tag-opinion-column tag-web-design post">
+
+	<h2><a href="http://www.smashingmagazine.com/2014/01/20/dealing-with-workaholism-on-web-teams/" rel="bookmark" title="Read 'Dealing With Workaholism On Web Teams'">Dealing With Workaholism On Web Teams</a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://www.smashingmagazine.com/author/yiannis-konstantakopoulos/?rel=author" title="Posts by Yiannis Konstantakopoulos" >Yiannis Konstantakopoulos</a></li>
+        <li class="date">January 20th, 2014</li>
+            <li class="tags"><a href="http://www.smashingmagazine.com/tag/community/">Community</a>, <a href="http://www.smashingmagazine.com/tag/opinion-column/">Opinion Column</a>, <a href="http://www.smashingmagazine.com/tag/web-design/">Web Design</a></li>
+                <li class="comments"><a href="http://www.smashingmagazine.com/2014/01/20/dealing-with-workaholism-on-web-teams/#comments" title="Comment on Dealing With Workaholism On Web Teams">51 Comments</a> </li>
+        </ul>
+
+  <p>Workaholism is often confused with hard work. Some people who work on the Web seem not only to disregard its dangers, but to actively promote it. They see it as a badge of honor&mdash;but is it really? On the contrary, it’s a serious issue that can damage Web teams.</p>
+
+<p><a href="http://www.smashingmagazine.com/2014/01/20/dealing-with-workaholism-on-web-teams/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2014/01/office-night-frontpage-opt.jpg" alt="Dealing With Workaholism On Web Teams" title="Dealing With Workaholism On Web Teams" width="500" height="382"  /></a></p>
+
+<p>Before we get started, <a href="http://www.psychologytoday.com/blog/wired-success/201203/workaholism-and-the-myth-hard-work">let’s make one thing clear</a>: A "workaholic" is someone who is <a href="http://www.psychologytoday.com/blog/the-workaholics/201112/understanding-the-dynamics-workaholism">addicted</a> to work, someone who is out of balance and out of control. Their addiction can make them work for 12, 14 or even more hours a day, every day. No weekends, no vacations, just work. Soon, they neglect their family, friends, health, sometimes damaging them all irrevocably.</p>
+
+
+  <a href="http://www.smashingmagazine.com/2014/01/20/dealing-with-workaholism-on-web-teams/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    	<div class="homepagepremedtargetwrapper clearfix">
+		<span class="declare">Advertisement</span>
+		<span class="awithus"><a class="sprite ed-us" title="Advertise with us!" href="mailto:&#97;&#100;&#118;&#101;&#114;&#116;&#105;&#115;&#105;&#110;&#103;&#64;&#115;&#109;&#97;&#115;&#104;&#105;&#110;&#103;&#109;&#97;&#103;&#97;&#122;&#105;&#110;&#101;&#46;&#99;&#111;&#109;">Advertise with us!</a></span>
+        <div id="hp_premium_ed">
+            <script type="text/javascript"><!--// <![CDATA[
+                OA_show("Homepage prem Ad");
+            // ]]> --></script>                                
+        </div>
+	</div>
+    
+    
+<article id="jump" class="post-172222 post type-post status-publish format-standard hentry category-design tag-inspiration tag-interviews tag-web-design post">
+
+	<h2><a href="http://www.smashingmagazine.com/2014/01/17/how-i-work-andres-glusman-vp-of-meetup/" rel="bookmark" title="Read 'How I Work: Meetup&#8217;s Andres Glusman On The Power Of UX And Lean Startup Methods'"><span class="catch_headline">Interview</span><span class="headline">How I Work: Meetup&#8217;s Andres Glusman On The Power Of UX And Lean Startup Methods</span></a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://www.smashingmagazine.com/author/jacob-cook/?rel=author" title="Posts by Jacob Cook" >Jacob Cook</a></li>
+        <li class="date">January 17th, 2014</li>
+            <li class="tags"><a href="http://www.smashingmagazine.com/tag/inspiration/">Inspiration</a>, <a href="http://www.smashingmagazine.com/tag/interviews/">Interviews</a>, <a href="http://www.smashingmagazine.com/tag/web-design/">Web Design</a></li>
+                <li class="comments"><a href="http://www.smashingmagazine.com/2014/01/17/how-i-work-andres-glusman-vp-of-meetup/#comments" title="Comment on How I Work: Meetup&#8217;s Andres Glusman On The Power Of UX And Lean Startup Methods">5 Comments</a> </li>
+        </ul>
+
+  <p>Welcome to another interview in the <a href="http://www.smashingmagazine.com/author/jacob-cook/?rel=author">“How I Work” series</a>. These interviews reveal how leading thinkers and creators on the Web design, code and create. The goal is not to get into the nuances of their craft (that information exists elsewhere online), but rather to step back and learn a bit about their habits, philosophies and workflow for producing great work.</p>
+
+<p><a href="http://www.smashingmagazine.com/2014/01/17/how-i-work-andres-glusman-vp-of-meetup/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2014/01/meetup-hq-opt_mini.jpg" width="500" height="297" alt="How I Work: Meetup's Andres Glusman On The Power Of UX And Lean Startup Methods" title="How I Work: Meetup's Andres Glusman On The Power Of UX And Lean Startup Methods" /></a></p>
+
+<p>This time, we’re speaking with Andres Glusman, of <a href="http://meetup.com">Meetup</a>, a company that uses the efficiency of the Internet to conveniently connect people offline. Andres works as the VP of Strategy, Product and Community in Meetup’s New York City office. In this piece, he shares with us how the company uses User Experience (UX), Lean Startup methods and innovative ways of organizing interdisciplinary teams to fuel the company’s consistent growth.</p>
+  <a href="http://www.smashingmagazine.com/2014/01/17/how-i-work-andres-glusman-vp-of-meetup/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    
+<article  class="post-179939 post type-post status-publish format-standard hentry category-mobile post">
+
+	<h2><a href="http://mobile.smashingmagazine.com/2014/01/16/use-data-research-to-build-better-mobile-web/" rel="bookmark" title="Read 'How To Use Data And Research To Build A Better Mobile Web'">How To Use Data And Research To Build A Better Mobile Web</a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://mobile.smashingmagazine.com/author/jonathan-kochis/?rel=author" title="Posts by Jonathan Kochis" >Jonathan Kochis</a></li>
+        <li class="date">January 16th, 2014</li>
+    <li class="tags"><a href="http://mobile.smashingmagazine.com/tag/case-studies/">Case Studies</a>, <a href="http://mobile.smashingmagazine.com/tag/marketing/">Marketing</a>, <a href="http://mobile.smashingmagazine.com/tag/strategy/">Strategy</a></li>            <li class="comments"><a href="http://mobile.smashingmagazine.com/2014/01/16/use-data-research-to-build-better-mobile-web/#comments" title="How To Use Data And Research To Build A Better Mobile Web">7 Comments</a></li>
+        </ul>
+
+  <p>The value you bring to any project as a designer or user experience professional isn’t <em>only</em> your ability to execute a series of tasks. Good clients will recognize and appreciate the guidance, recommendations and opinions that come with your experience.</p>
+
+<p><a href="http://mobile.smashingmagazine.com/2014/01/16/use-data-research-to-build-better-mobile-web/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2014/01/how-to-use-data-opt.png" alt="How To Use Data And Research To Build A Better Mobile Web" title="How To Use Data And Research To Build A Better Mobile Web" width="500" height="390"  /></a></p>
+
+<p><strong>It’s up to you to be forthcoming</strong> and to position yourself as a valuable thinker from the start. It’s also up to you to base your recommendations on more than subjective opinion. This is especially true in the rapidly evolving world of mobile, where clients typically require as much education as they do execution.</p>
+  <a href="http://mobile.smashingmagazine.com/2014/01/16/use-data-research-to-build-better-mobile-web/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    
+<article  class="post-179905 post type-post status-publish format-standard hentry category-coding post">
+
+	<h2><a href="http://coding.smashingmagazine.com/2014/01/15/create-custom-shipping-methods-magento/" rel="bookmark" title="Read 'Creating Custom Shipping Methods In Magento'">Creating Custom Shipping Methods In Magento</a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://coding.smashingmagazine.com/author/matthew-haworth/?rel=author" title="Posts by Matthew Haworth" >Matthew Haworth</a></li>
+        <li class="date">January 15th, 2014</li>
+    <li class="tags"><a href="http://coding.smashingmagazine.com/tag/magento/">Magento</a></li>            <li class="comments"><a href="http://coding.smashingmagazine.com/2014/01/15/create-custom-shipping-methods-magento/#comments" title="Creating Custom Shipping Methods In Magento">6 Comments</a></li>
+        </ul>
+
+  <p>In this tutorial, we will use Magento’s powerful shipping-method code abstraction to create a shipping carrier. We will create two shipping methods that provide a fixed shipping price, allow for free shipping promotions, define logic based on an item’s weight and, finally, make it all configurable in the admin panel.</p>
+
+<p><a href="http://coding.smashingmagazine.com/2014/01/15/create-custom-shipping-methods-magento/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2011/12/magento-admin.png" alt="Creating Custom Shipping Methods In Magento" title="Creating Custom Shipping Methods In Magento" width="500" height="319"  /></a></p>
+
+<p>This tutorial assumes that you are familiar with how to create a Magento module. If you are not, please first refer to an earlier tutorial in this series, “<a href="http://coding.smashingmagazine.com/2012/03/01/basics-creating-magento-module/">The Basics of Creating a Magento Module</a>.” To begin, you will need a Community or Enterprise  installation of Magento, either locally or on a server that you are able to access.</p>
+
+  <a href="http://coding.smashingmagazine.com/2014/01/15/create-custom-shipping-methods-magento/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    
+<article  class="post-178356 post type-post status-publish format-standard hentry category-design category-discussions category-global-web-design tag-communication tag-content post">
+
+	<h2><a href="http://www.smashingmagazine.com/2014/01/14/editing-tips-for-business-web-content/" rel="bookmark" title="Read 'Editing Tips For Business Web Content'">Editing Tips For Business Web Content</a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://www.smashingmagazine.com/author/brad-shorr/?rel=author" title="Posts by Brad Shorr" >Brad Shorr</a></li>
+        <li class="date">January 14th, 2014</li>
+            <li class="tags"><a href="http://www.smashingmagazine.com/tag/communication/">Communication</a>, <a href="http://www.smashingmagazine.com/tag/content/">Content</a></li>
+                <li class="comments"><a href="http://www.smashingmagazine.com/2014/01/14/editing-tips-for-business-web-content/#comments" title="Comment on Editing Tips For Business Web Content">18 Comments</a> </li>
+        </ul>
+
+  <p>The Web is awash in content. A recent Moz article reports that <a href="http://moz.com/blog/future-of-content-upcoming-trends-in-2014">92,000 new articles</a> are posted online <em>every day</em>. Companies are spending <a href="http://www.customcontentcouncil.com/news/nearly-44-billion-new-survey-shows-rise-content-marketing-budget">billions on content marketing</a> to enhance credibility, build brand awareness and, especially of late, improve SEO.</p>
+
+<p><a href="http://www.smashingmagazine.com/2014/01/14/editing-tips-for-business-web-content/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2013/07/mistakes-made-lessons-learned.jpg" alt="Editing Tips For Business Web Content" title="Editing Tips For Business Web Content" width="500" height="281"  /></a></p>
+
+<p>Google has always <em>tried</em> to reward great content with high rankings, but today, thanks to vast improvements in its algorithm, Google is better able to actually <em>do</em> it. Its content quality guidelines are perfectly aligned with what every writer and marketer should aspire to.</p>
+
+
+  <a href="http://www.smashingmagazine.com/2014/01/14/editing-tips-for-business-web-content/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    
+<article  class="post-179796 post type-post status-publish format-standard hentry category-coding post">
+
+	<h2><a href="http://coding.smashingmagazine.com/2014/01/13/better-javascript-library-for-the-dom/" rel="bookmark" title="Read 'Writing A Better JavaScript Library For The DOM'">Writing A Better JavaScript Library For The DOM</a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://coding.smashingmagazine.com/author/maksim-chemerisuk/?rel=author" title="Posts by Maksim Chemerisuk" >Maksim Chemerisuk</a></li>
+        <li class="date">January 13th, 2014</li>
+    <li class="tags"><a href="http://coding.smashingmagazine.com/tag/css/">CSS</a>, <a href="http://coding.smashingmagazine.com/tag/javascript/">JavaScript</a>, <a href="http://coding.smashingmagazine.com/tag/jquery/">JQuery</a></li>            <li class="comments"><a href="http://coding.smashingmagazine.com/2014/01/13/better-javascript-library-for-the-dom/#comments" title="Writing A Better JavaScript Library For The DOM">46 Comments</a></li>
+        </ul>
+
+  <p>At present, jQuery is the <em>de facto</em> library for working with the document object model (DOM). It can be used with popular client-side MV* frameworks (such as Backbone), and it has a ton of plugins and a very large community.</p>
+
+<p><a href="http://coding.smashingmagazine.com/2014/01/13/better-javascript-library-for-the-dom/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2014/01/new-feature-with-jquery.jpg" alt="Writing A Better JavaScript Library For The DOM" title="Writing A Better JavaScript Library For The DOM" width="500" height="293"  /></a></p>
+
+<p>As developers’ interest in JavaScript increases by the minute, a lot of people are becoming curious about <strong>how native APIs really work</strong> and about when we can just use them instead of including an extra library. Lately, I have started to see more and more problems with jQuery, at least my use of it.</p>
+  <a href="http://coding.smashingmagazine.com/2014/01/13/better-javascript-library-for-the-dom/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    
+<article  class="post-179622 post type-post status-publish format-standard hentry category-mobile post">
+
+	<h2><a href="http://mobile.smashingmagazine.com/2014/01/10/four-ways-to-build-a-mobile-app-part2-native-android/" rel="bookmark" title="Read 'Four Ways To Build A Mobile Application, Part 2: Native Android'">Four Ways To Build A Mobile Application, Part 2: Native Android</a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://mobile.smashingmagazine.com/author/peter-traeg/?rel=author" title="Posts by Peter Traeg" >Peter Traeg</a></li>
+        <li class="date">January 10th, 2014</li>
+    <li class="tags"><a href="http://mobile.smashingmagazine.com/tag/android/">Android</a>, <a href="http://mobile.smashingmagazine.com/tag/apps/">Apps</a>, <a href="http://mobile.smashingmagazine.com/tag/native/">Native</a></li>            <li class="comments"><a href="http://mobile.smashingmagazine.com/2014/01/10/four-ways-to-build-a-mobile-app-part2-native-android/#comments" title="Four Ways To Build A Mobile Application, Part 2: Native Android">8 Comments</a></li>
+        </ul>
+
+  <p>This article is the second in a series of four articles covering four ways to develop mobile applications. The <a href="http://mobile.smashingmagazine.com/2013/11/22/four-ways-to-build-a-mobile-app-part1-native-ios/">last article</a> covered how to accomplish this using native iOS development tools. In this article, we’ll look at how to build the same sort of application using native Android tools.</p>
+
+<p><a href="http://mobile.smashingmagazine.com/2014/01/10/four-ways-to-build-a-mobile-app-part2-native-android/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2014/01/mobile-experience-opt.png" alt="Four Ways To Build A Mobile Application, Part 2: Native Android" title="Four Ways To Build A Mobile Application, Part 2: Native Android" width="500" height="324"  /></a></p>
+
+<p><strong>We’ve been building a simple tip calculator.</strong> As with the iOS application, this one contains two screens: a main view and a settings view. The settings view persists the default tip percentage to local storage using Android’s SDK support.</p>
+
+  <a href="http://mobile.smashingmagazine.com/2014/01/10/four-ways-to-build-a-mobile-app-part2-native-android/" class="continue-reading">Read more...</a>
+
+</article>
+
+    
+    
+<article  class="post-178570 post type-post status-publish format-standard hentry category-opinion-column-category tag-community tag-opinion-column tag-web-design post">
+
+	<h2><a href="http://www.smashingmagazine.com/2014/01/09/challenges-rewards-teaching-web-design/" rel="bookmark" title="Read 'The Challenges And Rewards Of Teaching Web Design'">The Challenges And Rewards Of Teaching Web Design</a></h2>
+
+<ul class="postmetadata clearfix">
+    <li class="author">By <a rel="author" href="http://www.smashingmagazine.com/author/jeremy-girard/?rel=author" title="Posts by Jeremy Girard" >Jeremy Girard</a></li>
+        <li class="date">January 9th, 2014</li>
+            <li class="tags"><a href="http://www.smashingmagazine.com/tag/community/">Community</a>, <a href="http://www.smashingmagazine.com/tag/opinion-column/">Opinion Column</a>, <a href="http://www.smashingmagazine.com/tag/web-design/">Web Design</a></li>
+                <li class="comments"><a href="http://www.smashingmagazine.com/2014/01/09/challenges-rewards-teaching-web-design/#comments" title="Comment on The Challenges And Rewards Of Teaching Web Design">33 Comments</a> </li>
+        </ul>
+
+  <p>Just over four years ago, I decided to take a part-time position teaching website design and front-end development at a local university, <a href="http://ww2.uri.edu/">the University of Rhode Island</a>. My time in the classroom has been one of the most challenging as well as one of the most rewarding experiences in my career, and I believe that other Web professionals would greatly benefit from spending some time in an educational setting teaching others their craft.</p>
+
+<p><a href="http://www.smashingmagazine.com/2014/01/09/challenges-rewards-teaching-web-design/"><img src="http://media.smashingmagazine.com/wp-content/uploads/2014/01/teacher-learner-opt.jpg" alt="The Challenges And Rewards Of Teaching Web Design" title="The Challenges And Rewards Of Teaching Web Design" width="500" height="281"  /></a></p>
+
+<p>In this article, we will look at some of the challenges to prepare for if you are considering taking on a teaching position. I will also present some of my personal experiences and insights, including the benefits and rewards I’ve enjoyed as a teacher, to help you consider such a move for your own career.</p>
+  <a href="http://www.smashingmagazine.com/2014/01/09/challenges-rewards-teaching-web-design/" class="continue-reading">Read more...</a>
+
+</article>
+
+    <div class="wp-pagenavi clearfix">
+<div class="pagenavi clearfix"><div class="previous"></div><div class="pagelist clearfix"><span class="current">1</span><a href="http://www.smashingmagazine.com/page/2/" class="page" title="2">2</a><a href="http://www.smashingmagazine.com/page/3/" class="page" title="3">3</a><a href="http://www.smashingmagazine.com/page/4/" class="page" title="4">4</a><a href="http://www.smashingmagazine.com/page/5/" class="page" title="5">5</a><a href="http://www.smashingmagazine.com/page/6/" class="page" title="6">6</a><a href="http://www.smashingmagazine.com/page/7/" class="page" title="7">7</a><a href="http://www.smashingmagazine.com/page/8/" class="page" title="8">8</a><a href="http://www.smashingmagazine.com/page/9/" class="page" title="9">9</a><a href="http://www.smashingmagazine.com/page/10/" class="page" title="10">10</a></div><div class="next"><a href="http://www.smashingmagazine.com/page/2/" >next &raquo;</a></div></div></div>
+<!-- <span class="current-pages">Page 1 of 208 ... redundante information...</span> --></div><!-- .col.main -->                                                                
+</div><!-- .grid -->
+<p><a href="#top" class="backtotop" title="Jump to the top of the page">&uarr; Back to top</a></p>
+</div><!-- .fluid -->
+
+    <div id="footer-navigation">
+            <div class="searching-on-mobile-device" id="mobile-search-footer">
+
+                <a href="#top" class="backtotop footer-mobile" title="Jump to the top of the page">&uarr; Back to top</a>
+
+                <form id="searching" class="search-for-mobile" method="get" action="http://www.smashingmagazine.com/search-results/" target="_top">
+                    <div class="clearfix">
+                        <input name="q" id="mobile-search-input" type="text" placeholder="e.g. CSS" />
+                        <button class="search_submit" type="submit">Search</button>
+                        <input type="hidden" name="cx" value="partner-pub-6779860845561969:5884617103">
+                        <input type="hidden" name="cof" value="FORID:10">
+                        <input type="hidden" name="ie" value="UTF-8">
+                    </div>
+                </form>
+
+            </div> <!-- Search form -->
+
+            <div class="toggle-nav" id="mobile-navigation-footer">
+
+                <a href="#top" class="backtotop footer-mobile" title="Jump to the top of the page">&uarr; Back to top</a>
+
+                <ul class="mobile-nav-ul">
+                    <li class="mobile-nav-heading">Categories</li>
+                    <li><a href="http://coding.smashingmagazine.com">Coding</a></li>
+                    <li><a href="http://www.smashingmagazine.com/category/design/">Design</a></li>
+                    <li><a href="http://mobile.smashingmagazine.com/">Mobile</a></li>
+                    <li><a href="http://www.smashingmagazine.com/category/graphics/">Graphics</a></li>
+                    <li><a href="http://uxdesign.smashingmagazine.com/">UX Design</a></li>
+                    <li><a href="http://wp.smashingmagazine.com/">WordPress</a></li>
+                </ul>
+                <ul class="mobile-nav-ul">
+                    <li class="mobile-nav-heading">Pages</li>
+                    <li><a href="http://www.smashingmagazine.com/books/">Books</a></li>
+                    <li><a href="http://www.smashingmagazine.com/ebooks/">eBook Library</a></li>
+                    <li><a href="http://www.smashingmagazine.com/workshops/">Workshops</a></li>
+                    <li><a href="http://www.smashingmagazine.com/the-smashing-newsletter/">Email Newsletter</a></li>
+                    <li><a href="http://jobs.smashingmagazine.com/">Job Board</a></li>
+                    <li><a href="http://www.smashingmagazine.com/about/">About us</a></li>
+                </ul>
+            </div> <!-- Mobile Nav uls -->
+        </div>
+
+    </div><!-- #container -->
+        <div id="wpsidebar">
+                
+    <div class="col side">
+                        
+      <div class="sm-search wp-search-form">                        
+                                
+        <form method="get" action="http://www.smashingmagazine.com/search-results/" target="_top">
+                <label for="magazine-search">Search on Smashing Magazine</label>
+                <input id="magazine-search" name="q" type="text" placeholder="e.g. Responsive design" />
+                <button class="search_submit" type="submit">Search</button>
+                <input type="hidden" name="cx" value="partner-pub-6779860845561969:5884617103">
+                <input type="hidden" name="cof" value="FORID:10">
+                <input type="hidden" name="ie" value="UTF-8">
+        </form>
+        
+        </div>
+
+        <div class="ed spnsrlistwrapper first-ad-container">
+                                <span class="declare">Advertisement</span>
+                <span class="awithus"><a href="mailto:&#97;&#100;&#118;&#101;&#114;&#116;&#105;&#115;&#105;&#110;&#103;&#64;&#115;&#109;&#97;&#115;&#104;&#105;&#110;&#103;&#109;&#97;&#103;&#97;&#122;&#105;&#110;&#101;&#46;&#99;&#111;&#109;" title="Advertise with us!" class="sprite ed-us">Advertise with us!</a></span>
+                
+                <script type="text/javascript">/* <![CDATA[ */ SmashingAds.showSponsorList(3); /* ]]> */ </script>
+                        </div>
+                                
+      <div class="sidebartabs sm-search smashingwidget">
+
+              <h3><a href="http://www.smashingmagazine.com/the-smashing-newsletter/"><img src="http://www.smashingmagazine.com/files/smashing-widget/v006/img/smnl.png" alt="Smashing Newsletter" /> Smashing Newsletter</a></h3>
+
+              <p>Subscribe to our email newsletter for useful tips and valuable resources, sent out every second Tuesday.</p>
+
+              <form action="http://smashingmagazine.us1.list-manage1.com/subscribe/post?u=16b832d9ad4b28edf261f34df&amp;id=a1666656e0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate">
+                      <input name="EMAIL" type="text" placeholder="email address" />
+                      <button class="search_submit" type="submit">Subscribe</button>
+              </form>
+
+      </div>
+
+                        <div class="ed spnsrlistwrapper">
+                                 
+                                        <script type="text/javascript">/* <![CDATA[ */ SmashingAds.showSponsorList(3); /* ]]> */ </script>
+                                                        </div>
+
+                        <div class="sidebartabs sm-search smashingwidget self-promo">
+
+                                <div class="self-promo-inner">
+
+          <a href="http://www.smashingmagazine.com/smashing-book-4-new-perspectives/?pk_campaign=sb4-sidebar"><img src="http://media.smashingmagazine.com/wp-content/uploads/2013/04/Smashing-Book-4-sidebar-transparent-opt.png" alt="Smashing Printed Books"></a>
+
+          <p>It's done. The <a href="http://www.smashingmagazine.com/smashing-book-4-new-perspectives/?pk_campaign=sb4-sidebar">Smashing Book #4</a>, our brand new book with smart <strong>front-end techniques</strong> and design approaches. Written by respected designers and developers, neatly packed in a gorgeous hardcover.</p>
+
+        </div>
+
+        <div class="self-promo-inner">
+
+          <a href="http://www.smashingmagazine.com/ebooks/?pk_campaign=sb4-sidebar"><img src="http://media.smashingmagazine.com/wp-content/uploads/2013/10/smashing-library-footer-new-opt.png" alt="Smashing Printed Books"></a>
+
+                <p>Hungry for more content? Over 60 <strong>eBooks</strong> are waiting to be discovered in our lovely <a href="http://www.smashingmagazine.com/ebooks/?pk_campaign=sb4-sidebar">Smashing Library</a>. And guess what? You can watch Smashing Conference talks there, too.</p>
+
+              </div>
+
+              <div class="self-promo-inner">
+
+          <a href="http://www.smashingmagazine.com/workshops/?pk_campaign=sb4-sidebar"><img src="http://media.smashingmagazine.com/wp-content/uploads/2013/11/addy-osmani-footer.png" alt="Smashing Workshops"></a>
+
+               <p>Do you feel like your <strong>workflow</strong> is slowing you down? We might have just what you need: Front-End, UX and Responsive design <a href="http://www.smashingmagazine.com/workshops/?pk_campaign=sb4-sidebar">full-day workshops</a>, by well-respected experts.</p>
+
+              </div>
+
+                  </div>
+
+      <div class="ed spnsrlistwrapper">
+               
+                                        <script type="text/javascript">/* <![CDATA[ */ SmashingAds.showSponsorList(); /* ]]> */ </script>
+                                                        </div>
+                                                        
+      <div class="sidebartabs">
+        
+        <div id="jobs" class="smashingwidget">
+          
+          <h3><a href="http://jobs.smashingmagazine.com/?pk_campaign=sm&amp;piwik_kwd=widget"><span>Smashing Job Board</span><img src="http://www.smashingmagazine.com/files/smashing-widget/v006/img/sm-jobs.png" alt="Smashing Jobs"></a></h3>
+          
+          <ul class="topiclist">
+            <li style="display:none;"></li>
+            <li class="clearfix"><a href="http://feedproxy.google.com/~r/smjobs/~3/c0zq05qNMEU/2406351">Web Designer - Bates College - (Lewiston, Maine) - FullTime</a><p>SUMMARY AND SCOPE OF POSITION This position shapes how the college is represented visually in all digital communications. The Web Designer creates and produces&#8230;</p></li><li class="clearfix"><a href="http://feedproxy.google.com/~r/smjobs/~3/PpuY2lyrmOU/2406345">Web Designer - Biola University - (La Mirada, CA) - FullTime</a><p>Biola University is seeking a web designer to join its web team within the University Marketing and Communications department. We are looking for someone with strong&#8230;</p></li>          </ul>
+          
+          <p class="view-more"><a href="http://jobs.smashingmagazine.com?pk_campaign=sm&amp;piwik_kwd=widget">View more job openings&hellip;</a></p>
+        </div><!-- /#jobs -->
+
+      </div><!-- /.sidebartabs -->
+
+      <div id="sidebar_special">
+        
+        <script type='text/javascript'>OA_show('Sidebar Special');</script>
+ 
+      </div>
+            
+      <div class="two clearfix">
+                          <div class="left">        
+          <!--<div id="sidebaredtarget">-->
+          
+          <div class="sidebar_sky">
+                            <script type='text/javascript'>OA_show('Sidebar 1');</script>
+                          </div><!-- /.ed.sidebared -->
+          
+          <!-- </div> -->
+
+          <div class="sidebar_sky">
+                            <script type='text/javascript'>OA_show('Sidebar 2');</script>
+                          </div>
+        </div><!-- /.left -->
+            </div><!-- /.two -->
+                        
+                </div><!-- .col.ads -->
+        </div>
+<div id="footer">
+<div class="contribute"><div class="product clearfix"><div class="product-image">
+<a href="http://www.smashingmagazine.com/smashing-book-4-new-perspectives/?pk_campaign=sb4-footer"><img src="http://media.smashingmagazine.com/wp-content/uploads/2013/10/smashing-book-4-footer-opt.png" alt="Smashing Book #4"></a>
+</div>
+<div class="product-description"><p><a href="http://www.smashingmagazine.com/smashing-book-4-new-perspectives/?pk_campaign=sb4-footer"><strong>Smashing Book #4</strong></a><br />Get our brand new Smashing Book #4, available as print and eBook. <a href="http://www.smashingmagazine.com/smashing-book-4-new-perspectives/?pk_campaign=sb4-footer">Learn more...</a></p>
+</div></div></div>
+
+<div class="contribute"><div class="product clearfix"><div class="product-image">
+<a href="https://shop.smashingmagazine.com/smashing-library-complete.html?pk_campaign=smashingmagazine-footer"><img src="http://media.smashingmagazine.com/wp-content/uploads/2013/10/smashing-library-footer-new-opt.png" alt="The Smashing Library"></a>
+</div>
+<div class="product-description"><p><a href="https://shop.smashingmagazine.com/smashing-library-complete.html?pk_campaign=smashingmagazine-footer"><strong>The Smashing Library</strong></a><br />Grab all published and upcoming Smashing eBooks, in one swoop. <a href="https://shop.smashingmagazine.com/smashing-library-complete.html?pk_campaign=smashingmagazine-footer">Learn more...</a></p>
+</div></div></div>
+
+<div class="contribute"><div class="product clearfix"><div class="product-image">
+<a href="http://www.smashingmagazine.com/workshops/?pk_campaign=smashingmagazine-footer"><img src="http://media.smashingmagazine.com/wp-content/uploads/2013/11/addy-osmani-footer.png" alt="Smashing Workshops"></a>
+</div>
+<div class="product-description"><p><a href="http://www.smashingmagazine.com/workshops/?pk_campaign=smashingmagazine-footer"><strong>Smashing Workshops</strong></a><br />Join our hands-on full-day workshops, run by experts of the industry. Good stuff. <a href="http://www.smashingmagazine.com/workshops/?pk_campaign=smashingmagazine-footer">Learn more...</a></p>
+</div></div></div>
+
+<p class="statement"><em>With a commitment to quality content for the design community.</em><br /><a href="http://www.smashing-media.com/">A Smashing Media Company.</a> Made in Germany. 2006-2014. <a href="http://www.smashingmagazine.com/contact/">Contact Us.</a> <a href="http://www.smashingmagazine.com/about/">Impressum.</a></p>
+</div><!-- End of Footer -->
+        
+<!--
+<script type='text/javascript' src='http://www.smashingmagazine.com/wp-content/themes/smashingv4/javascripts/footer.combined.min.js'></script>
+<script type='text/javascript' src='http://www.smashingmagazine.com/wp-content/themes/smashingv4/javascripts/prism.js'></script>
+-->
+<script type='text/javascript'>if(navigator.userAgent.match(/IEMobile\/10\.0/)){var msViewportStyle=document.createElement("style");msViewportStyle.appendChild(document.createTextNode("@-ms-viewport{width:auto!important}"));document.getElementsByTagName("head")[0].appendChild(msViewportStyle)};</script>
+
+    <script src="//static.getclicky.com/js" type="text/javascript"></script>
+    <script type="text/javascript">
+        try{ clicky.init(2727); }catch(e){}
+    </script>
+<script type="text/javascript">
+setTimeout(function(){var a=document.createElement("script");
+var b=document.getElementsByTagName('script')[0];
+a.src=document.location.protocol+"//dnn506yrbagrg.cloudfront.net/pages/scripts/0011/1125.js";
+a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
+</script>
+<script type="text/javascript">
+var elements = ['http://www.smashingmagazine.com/wp-content/themes/smashingv4/javascripts/footer.combined.min.js', 'http://www.smashingmagazine.com/wp-content/themes/smashingv4/javascripts/prism.js'];
+
+var downloadJSAtOnload = function (elements) {
+    if (toString.call(elements) !== '[object Array]') return false;
+        
+    var i, element;
+    for (i = 0; i < elements.length; i++) {
+        element = document.createElement("script");
+        element.src = elements[i];
+        document.body.appendChild(element);
+    }
+    return true;
+}
+
+if (window.addEventListener)
+window.addEventListener("load", function () { downloadJSAtOnload(elements); }, false);
+else if (window.attachEvent)
+window.attachEvent("onload", function () { downloadJSAtOnload(elements); });
+else window.onload = function () { downloadJSAtOnload(elements); };
+</script>
+
+</body>
+</html> 
