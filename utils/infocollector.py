@@ -1,5 +1,5 @@
 from adb import Adb
-from clog import clog
+from clog import colorlog as cl
 
 freqtable = {
     "Z3735G": [1800, 1330],
@@ -72,7 +72,7 @@ class InfoCollector(Adb):
             total_temp += t
         average = total_temp / tempzone_count / 1000
         if average > 50:
-            clog.w("Temperatur is high(%d)" % average)
+            cl.w("Temperatur is high(%d)" % average)
         return average
 
     def collect(self, pname):
