@@ -1,4 +1,5 @@
 from adb import Adb
+from clog import clog
 
 freqtable = {
     "Z3735G": [1800, 1330],
@@ -61,6 +62,19 @@ class InfoCollector(Adb):
         return freq
 
 
+    def temperature(self):
+        tempzone_count = 6
+        temp = {}
+        for i in xrange(tempzone_count):
+            temp[i] = int(self.getsysfs("/sys/class/thermal/thermal_zone%d/temp" % i))
+        total_temp = 0
+        for t in temp.values():
+            total_temp += t
+        average = total_temp / tempzone_count / 1000
+        if average > 50:
+            clog.w("Temperatur is high(%d)" % average)
+        return average
+
     def collect(self, pname):
         self.root()
         dic = {}
@@ -69,6 +83,8 @@ class InfoCollector(Adb):
         dic["pname"] = self.pversion(pname)
         dic["rel"] = self.release()
         dic["mem"] = self.available_mem()
+        dic["temp"] = self.temperature()
         return dic
 
 collector = InfoCollector()
+print collector.temperature()

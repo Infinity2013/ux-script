@@ -14,7 +14,7 @@ from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
 TAGS = "gfx wm am input view freq freq dalvik sched"
-SYSTRACE_FLAG = False
+SYSTRACE_FLAG = False 
 
 '''
 cur = os.getcwd()
@@ -201,9 +201,9 @@ def doQALaunchTime(qaArgs):
     time_for_stable = qaArgs.get("stabletime", 5)
     global SYSTRACE_FLAG, TAGS
     if systrace != "":
-        SYSTRACE_FLAG = True
-    if systrace not in (["1"], ""):
         TAGS = " ".join(systrace)
+    elif systrace == ["0"]:
+        SYSTRACE_FLAG = False
     touchscreen = getTouchNode()
     outfd = open(outputName, "w")
     if qaArgs.get("skip") == None:
