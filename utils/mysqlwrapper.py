@@ -14,9 +14,7 @@ def addquote(s):
 class MySQLdbWrapper():
 
     def __init__(self):
-        if not MYSQL:
-            return
-        conn = MySQLdb.connect(host='localhost', user='root', passwd='1', port=3306)
+        conn = MySQLdb.connect(host='wxl-compile', user='root', passwd='1', port=3306)
         cur = conn.cursor()
         conn.select_db("ux")
         self.cur = cur

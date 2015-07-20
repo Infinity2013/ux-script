@@ -13,8 +13,8 @@ from uiautomator import device as d
 from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
-TAGS = "gfx wm am input view freq freq dalvik sched"
-SYSTRACE_FLAG = False 
+TAGS = "gfx wm am input view freq dalvik"
+SYSTRACE_FLAG = True
 
 '''
 cur = os.getcwd()
