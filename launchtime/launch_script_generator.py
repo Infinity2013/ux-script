@@ -11,7 +11,7 @@ def getArgs():
     packageName = raw_input("PackageName: ")
     uiobject_name = raw_input("UiobjectName: ")
     sleep_time = raw_input("SleepTime: ")
-    outName = "\"%s-%s_%s.launch\" %s (\"%s\", ic.board(), ic.release())" % ("%s", "%s", "%s", "%", uiobject_name)
+    outName = "\"%s-%s_%s.launch\" %s (\"%s\", ic.board(), ic.release())" % ("%s", "%s", "%s", "%", re.sub("\s", "_", uiobject_name))
     args["layer"] = layer
     args["packageName"] = packageName
     args["outName"] = outName
@@ -59,7 +59,7 @@ def main():
     if platform.system() != "Linux":
         return
     args = getArgs()
-    fn_script = "%s_launch.py" % (args.get("uiobject_name"))
+    fn_script = "%s_launch.py" % (re.sub("\s", "_", args.get("uiobject_name")))
     fn_path = "%s/%s" % (sys.path[0], fn_script)
     fd = open(fn_path, "w")
     writeHeader(fd)
