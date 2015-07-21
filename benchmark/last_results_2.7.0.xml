@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no" ?>
+<GLB_LAST_RESULTS>
+    
+    <test_result>
+        
+        <title>GLBenchmark 2.5 Egypt HD</title>
+        <type>C24Z16 Offscreen</type>
+        <texture_type>ETC1</texture_type>
+        <score>2418.8</score>
+        <fps>21 fps</fps>
+        <minfps>9.34579</minfps>
+        <maxfps>58.5899</maxfps>
+        <uom>frames</uom>
+        <vsync_triggered>false</vsync_triggered>
+        <error>0</error>
+        <error_string>NOERROR</error_string>
+    </test_result>
+</GLB_LAST_RESULTS>

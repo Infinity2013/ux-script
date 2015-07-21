@@ -14,7 +14,7 @@ from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
 TAGS = "gfx wm am input view freq dalvik"
-SYSTRACE_FLAG = True
+SYSTRACE_FLAG = False
 
 '''
 cur = os.getcwd()
@@ -199,6 +199,7 @@ def doQALaunchTime(qaArgs):
     evallist = qaArgs.get("evallist")
     finishtype = qaArgs.get("finishtype", "amstop")
     time_for_stable = qaArgs.get("stabletime", 5)
+    end_evallist = qaArgs.get("end_evallist")
     global SYSTRACE_FLAG, TAGS
     if systrace != "":
         TAGS = " ".join(systrace)
@@ -233,6 +234,9 @@ def doQALaunchTime(qaArgs):
         print content
         index += 1
         resList.append(res)
+        if end_evallist != None:
+            for line in end_evallist:
+                eval(line)
         killproc(finishtype, packageName)
         url = "%s/%s(%d)_%d.html" % (os.getcwd(), outputName, res, index)
         if SYSTRACE_FLAG is True:
