@@ -3,6 +3,7 @@ from clog import colorlog as cl
 
 freqtable = {
     "Z3735G": [1800, 1330],
+    "Z3735F": [1800, 1330],
 }
 class InfoCollector(Adb):
 

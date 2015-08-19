@@ -3,8 +3,7 @@ import os
 import sys
 import re
 import subprocess
-import adbhelper
-from clog import colorlog as colog
+import time
 from argparse import ArgumentParser
 
 def main():
@@ -16,9 +15,6 @@ def main():
     debug = args[0].debug
     pstate = args[0].pstate
     
-    if debug == 1:
-        colog.setLevel("v|e|c|w|d")
-
     if pstate != 0:
         set_pstate(pstate)
     else:
@@ -38,12 +34,26 @@ def getFreq():
 
 def setFreq(freq):
     print "setFreq start!"
+    execperm("add")
     pattern = "adb shell \"echo %d > /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\""
     for i in xrange(4):
         cmd = pattern % (freq, i)
         os.system(cmd)
     print "setFreq done!"
     getFreq()
+    execperm("elimate")
+
+def execperm(t):
+    flag = ""
+    if t == "add":
+        flag = "660"
+    else:
+        flag = "440"
+    pattern = "adb shell \"chmod %s  /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\""
+    for i in xrange(4):
+        cmd = pattern % (flag, i)
+        print cmd
+        os.system(cmd)
 
 def getFreqList():
     cmd = "adb shell cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies"
@@ -65,7 +75,9 @@ def freq():
         print "%d: %s" % (index, freq) 
         index += 1
     cmd = int(raw_input("which one?" ))
-    adbhelper.root()
+    os.system("adb root")
+    time.sleep(2)
+    os.system("adb remount")
     getFreq()
     setFreq(int(freqList[cmd - 1]))
 

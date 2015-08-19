@@ -13,7 +13,7 @@ from uiautomator import device as d
 from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
-TAGS = "gfx wm am input view freq dalvik"
+TAGS = "gfx wm am input view freq"
 SYSTRACE_FLAG = False
 
 '''
@@ -39,6 +39,27 @@ def init_dir():
         if key != 'cur':
             checkandcreate(work_path_dict.get(key))
 
+def setFreq(freq): 
+    adb.root()
+    print "setFreq start!" 
+    execperm("add")
+    pattern = "adb shell \"echo %d > /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\"" 
+    for i in xrange(4): 
+        cmd = pattern % (freq, i) 
+        os.system(cmd) 
+    print "setFreq done!"
+    execperm("eliminate")
+
+def execperm(t):
+    flag = ""
+    if t == "add":
+        flag = "660"
+    else:
+        flag = "440"
+    pattern = "adb shell \"chmod %s  /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\""
+    for i in xrange(4):
+        cmd = pattern % (flag, i)
+        os.system(cmd)
 
 def dump_logcat(name):
     os.chdir(work_path_dict.get('logcat'))
@@ -267,7 +288,7 @@ def doQALaunchTime(qaArgs):
     outfd.write("\n")
 
     resList.sort()
-    content = "median = %d ms" % (resList[(len(resList) + 1) / 2])
+    content = "median = %d ms" % (resList[((len(resList) + 1) / 2) - 1])
     mailmsg.append(content)
     print content
     outfd.write(content)

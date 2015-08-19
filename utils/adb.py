@@ -87,7 +87,7 @@ class Adb(object):
         else:
             if self.canroot:
                 self.cmd("root")
-                time.sleep(2)
+                time.sleep(3)
                 self.canroot = True if self.getprop("service.adb.root") == "1" else False
             else:
                 print "This device can't be rooted"
