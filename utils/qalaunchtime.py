@@ -13,7 +13,7 @@ from uiautomator import device as d
 from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 5
-TAGS = "gfx wm am input view freq"
+TAGS = "gfx wm am input view freq res sched"
 SYSTRACE_FLAG = False
 
 '''
@@ -223,9 +223,9 @@ def doQALaunchTime(qaArgs):
     end_evallist = qaArgs.get("end_evallist")
     global SYSTRACE_FLAG, TAGS
     if systrace != "":
-        TAGS = " ".join(systrace)
-    elif systrace == ["0"]:
-        SYSTRACE_FLAG = False
+        SYSTRACE_FLAG = True
+        if len(systrace) > 1:
+            TAGS = " ".join(systrace)
     touchscreen = getTouchNode()
     outfd = open(outputName, "w")
     if qaArgs.get("skip") == None:
@@ -240,11 +240,11 @@ def doQALaunchTime(qaArgs):
     init_dir()
 
     while (index < repeatCount):
-        adb.cmd("shell dumpsys SurfaceFlinger --latency-clear")
-        clear_logcat()
         if evallist != None:
             for line in evallist:
                 eval(line)
+        adb.cmd("shell dumpsys SurfaceFlinger --latency-clear")
+        clear_logcat()
         start_tracing(TAGS)
         dbinfo = ic.collect(packageName)
         dbinfo['name'] = packageName.split(".")[-1]  # i.e com.android.settings name: settings

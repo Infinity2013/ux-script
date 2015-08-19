@@ -1,4 +1,4 @@
 adb root
-sleep 2
+sleep 4 
 adb push eventHunter /data/eventHunter
 adb shell "chmod 777 /data/eventHunter"

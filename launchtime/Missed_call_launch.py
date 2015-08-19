@@ -18,7 +18,7 @@ args["uiobject_name"] = "Missed call"
 args["repeat"] = a[0].repeat
 args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
-args["evallist"] = ['adb.cmd("shell am start -a com.wxl.miss com.archermind.suhao.fakenotification/com.archermind.suhao.fakenotification.MainActivity")', 'time.sleep(1)', 'd.open.notification()', 'time.sleep(2)']
+#args["evallist"] = ['adb.cmd("shell am start -a com.wxl.miss com.archermind.suhao.fakenotification/com.archermind.suhao.fakenotification.MainActivity")', 'time.sleep(1)', 'd.open.notification()', 'time.sleep(2)']
 args["skip"] = 1
-#args["evallist"] = ['d.open.notification()', 'time.sleep(2)']
+args["evallist"] = ['d.open.notification()', 'time.sleep(2)']
 doQALaunchTime(args)

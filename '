@@ -1,0 +1,3 @@
+outName = "\"\%s-\%s.launch\" \% (%s, adbhelper.getDeviceInfo())" % "a"
+print outName
+
