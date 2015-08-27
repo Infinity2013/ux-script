@@ -15,11 +15,11 @@ def setproxy():
     protocollist = ['http', 'https', 'ftp', 'socks']
     # set proxy
     for protocol in protocollist:
-        #set host
+        # set host
         cmd = "dconf write /system/proxy/%s/host \"'%s'\"" % (protocol, PROXY)
         print cmd
         os.system(cmd)
-        #set port
+        # set port
         cmd = "dconf write /system/proxy/%s/port \"'%s'\"" % (protocol, PORT)
         print cmd
         os.system(cmd)
@@ -89,13 +89,24 @@ def keyscan():
     os.system('ssh-keyscan -p 29418 android.intel.com >> ~/.ssh/known_hosts')
     os.system('ssh-keyscan -p 29418 %s >> ~/.ssh/known_hosts' % LOCAL_MIRROR)
     os.system('ssh-keyscan -p 29418 %s >> ~/.ssh/known_hosts' % LOCAL_MIRROR_ADDRESS)
-    subprocess.check_call('ssh android.intel.com gerrit ls-projects', shell=True, stdout=subprocess.PIPE)
+    os.system('ssh android.intel.com gerrit ls-projects', shell=True, stdout=subprocess.PIPE)
+    
+
+def sshkeygen():
+    cmd = 'rm %s/.ssh/py_rsa*' % HOME
+    os.system(cmd)
+    cmd = 'ssh-keygen -f %s/.ssh/py_rsa -N ""' % HOME
+    os.system(cmd)
+    py_rsa_pub = ""
+    with open("%s/.ssh/py_rsa.pub" % HOME, "r") as f:
+        py_rsa_pub = f.readline().strip()
+    return py_rsa_pub
 
 def main():
+    sshkeygen()
     setproxy()
     setgitconfig()
     setsshconfig()
     keyscan()
 
 if __name__ == "__main__":
-    main()

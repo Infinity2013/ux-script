@@ -12,7 +12,7 @@ from mysqlwrapper import wrapper as sw
 from uiautomator import device as d
 from pprint import pprint
 DBG = False
-SLEEP_TIME_TO_BE_STABLE = 5
+SLEEP_TIME_TO_BE_STABLE = 90
 TAGS = "gfx wm am input view freq res sched"
 SYSTRACE_FLAG = False
 
@@ -219,7 +219,7 @@ def doQALaunchTime(qaArgs):
     systrace = qaArgs.get("systrace", "")
     evallist = qaArgs.get("evallist")
     finishtype = qaArgs.get("finishtype", "amstop")
-    time_for_stable = qaArgs.get("stabletime", 5)
+    time_for_stable = qaArgs.get("stabletime", 10)
     end_evallist = qaArgs.get("end_evallist")
     global SYSTRACE_FLAG, TAGS
     if systrace != "":

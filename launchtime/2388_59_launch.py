@@ -20,5 +20,5 @@ args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
 args["skip"] = 1
 args["evallist"] = ['adb.cmd("shell am start com.android.contacts/.activities.PeopleActivity")', 'd(text="ahkubxt").click()', 'time.sleep(2)']
-args["end_evallist"] = ['d(resourceId="com.android.dialer:id/floating_end_call_action_button").click()', 'time.sleep(2)']
+args["end_evallist"] = ['d(resourceId="com.android.dialer:id/floating_end_call_action_button").click()', 'time.sleep(20)']
 doQALaunchTime(args)

@@ -9,6 +9,8 @@ import shutil
 from adbhelper import getProp
 logcatcmdpattern = "adb logcat -d -v threadtime > %s.log"
 dmesgcmdpattern = "adb shell dmesg > %s.dmesg"
+memcmdpattern = "adb shell dumpsys meminfo > %s.mi"
+cpucmdpattern = "adb shell dumpsys cpuinfo > %s.ci"
 
 last_start = 0
 last_end = 0
@@ -45,9 +47,13 @@ def main():
 
         logcatcmd = logcatcmdpattern % (outputpreffix)
         dmesgcmd = dmesgcmdpattern % (outputpreffix)
+        cpucmd = cpucmdpattern % outputpreffix
+        memcmd = memcmdpattern % outputpreffix
 
         os.system(logcatcmd)
         os.system(dmesgcmd)
+        os.system(cpucmd)
+        os.system(memcmd)
 
         outputpreffix = re.sub("\\\\", "", outputpreffix)
         logoutput = "%s.log" % outputpreffix
