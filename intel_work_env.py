@@ -1,4 +1,4 @@
-#!/usb/bin/env python
+#!/usr/bin/env python
 import subprocess
 import os
 import sys
@@ -103,10 +103,13 @@ def sshkeygen():
     return py_rsa_pub
 
 def main():
-    sshkeygen()
-    setproxy()
+#    sshkeygen()
+#    setproxy()
     setgitconfig()
     setsshconfig()
     keyscan()
 
 if __name__ == "__main__":
+    main()
+	
+	

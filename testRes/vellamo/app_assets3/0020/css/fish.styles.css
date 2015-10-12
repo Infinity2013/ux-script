@@ -1,0 +1,197 @@
+/**
+ * Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+ * Qualcomm Technologies Proprietary and Confidential.
+ */
+@import url("fish.animation.webkit.css");
+@import url("fish.animation.moz.css");
+@import url("fish.animation.o.css");
+@import url("fish.animation.ms.css");
+
+body {
+  background-color: #53A3C9;
+  background-image: url('../img/background.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+#vellamo_img {
+  position: absolute;
+  height: 80%;
+  width: auto;
+  top: 13%;
+  left: 38%; /* the image has a ratio of 15/32 */
+  z-index: 0;
+  transform-style: preserve-3d;
+  animation: gentle_wave 4s infinite ease-in-out;
+  -webkit-animation: gentle_wave 4s infinite ease-in-out;
+  -moz-animation: gentle_wave 4s infinite ease-in-out;
+  -o-animation: gentle_wave 4s infinite ease-in-out;
+  -ms-animation: gentle_wave 4s infinite ease-in-out;
+}
+
+.background_100percent {
+  -webkit-background-size: 100% 100%;
+     -moz-background-size: 100% 100%;
+       -o-background-size: 100% 100%;
+          background-size: 100% 100%;
+}
+
+#stage {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100vh;
+  width: 100vw;
+  -webkit-perspective: 800px;
+     -moz-perspective: 800px;
+      -ms-perspective: 800px;
+       -o-perspective: 800px;
+          perspective: 800px;
+}
+
+.v-div {
+  position: absolute;
+  width: 10%;
+  height: 10%;
+  margin-left: -5%;
+  margin-top: -5%;
+  z-index: 1;
+  -webkit-transform-style: preserve-3d;
+     -moz-transform-style: preserve-3d;
+      -ms-transform-style: preserve-3d;
+       -o-transform-style: preserve-3d;
+          transform-style: preserve-3d;
+  -webkit-transform-origin: center center 140px;
+     -moz-transform-origin: center center 140px;
+      -ms-transform-origin: center center 140px;
+       -o-transform-origin: center center 140px;
+          transform-origin: center center 140px;
+}
+
+.fish-body {
+  background-image: url('../img/fish_body.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+
+.fly_0 {
+  /* on some browsers, different animation behaviour will occur if delay is 0ms versus non-zero delay */
+  -webkit-animation: fly 3s linear 10ms infinite;
+     -moz-animation: fly 3s linear 10ms infinite;
+      -ms-animation: fly 3s linear 10ms infinite;
+       -o-animation: fly 3s linear 10ms infinite;
+          animation: fly 3s linear 10ms infinite;
+}
+
+.fly_100 {
+  -webkit-animation: fly 3s linear 100ms infinite;
+     -moz-animation: fly 3s linear 100ms infinite;
+      -ms-animation: fly 3s linear 100ms infinite;
+       -o-animation: fly 3s linear 100ms infinite;
+          animation: fly 3s linear 100ms infinite;
+}
+
+.fly_200 {
+  -webkit-animation: fly 3s linear 200ms infinite;
+     -moz-animation: fly 3s linear 200ms infinite;
+      -ms-animation: fly 3s linear 200ms infinite;
+       -o-animation: fly 3s linear 200ms infinite;
+          animation: fly 3s linear 200ms infinite;
+}
+
+.fly_300 {
+  -webkit-animation: fly 3s linear 300ms infinite;
+     -moz-animation: fly 3s linear 300ms infinite;
+      -ms-animation: fly 3s linear 300ms infinite;
+       -o-animation: fly 3s linear 300ms infinite;
+          animation: fly 3s linear 300ms infinite;
+}
+
+.fly_400 {
+  -webkit-animation: fly 3s linear 400ms infinite;
+     -moz-animation: fly 3s linear 400ms infinite;
+      -ms-animation: fly 3s linear 400ms infinite;
+       -o-animation: fly 3s linear 400ms infinite;
+          animation: fly 3s linear 400ms infinite;
+}
+
+.fly_500 {
+  -webkit-animation: fly 3s linear 500ms infinite;
+     -moz-animation: fly 3s linear 500ms infinite;
+      -ms-animation: fly 3s linear 500ms infinite;
+       -o-animation: fly 3s linear 500ms infinite;
+          animation: fly 3s linear 500ms infinite;
+}
+
+.fly_600 {
+  -webkit-animation: fly 3s linear 600ms infinite;
+     -moz-animation: fly 3s linear 600ms infinite;
+      -ms-animation: fly 3s linear 600ms infinite;
+       -o-animation: fly 3s linear 600ms infinite;
+          animation: fly 3s linear 600ms infinite;
+}
+
+
+/* fore wing */
+.left-wing {
+  position: absolute;
+  left: 35%;
+  top: 36%;
+  width: 80%;
+  height: 20%;
+
+  background-image: url('../img/fish_finl.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
+  transform-style: preserve-3d;
+  transform-origin: left top;
+  animation: left-flap 3s infinite linear;
+  -webkit-transform-style: preserve-3d;
+  -webkit-transform-origin: left top;
+  -webkit-animation: left-flap 3s infinite linear;
+  -moz-transform-style: preserve-3d;
+  -moz-transform-origin: left top;
+  -moz-animation: left-flap 3s infinite linear;
+  -o-transform-style: preserve-3d;
+  -o-transform-origin: left top;
+  -o-animation: left-flap 3s infinite linear;
+  -ms-transform-style: preserve-3d;
+  -ms-transform-origin: left top;
+  -ms-animation: left-flap 3s infinite linear;
+}
+
+/* back wing*/
+.right-wing {
+  position: absolute;
+  left: 35%;
+  top: 36%;
+  width: auto;
+  width: 80%;
+  height: 20%;
+
+  background-image: url('../img/fish_finr.png');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+
+  transform-style: preserve-3d;
+  transform-origin: left top;
+  animation: right-flap 3s infinite linear;
+  -webkit-transform-style: preserve-3d;
+  -webkit-transform-origin: left top;
+  -webkit-animation: right-flap 3s infinite linear;
+  -moz-transform-style: preserve-3d;
+  -moz-transform-origin: left top;
+  -moz-animation: right-flap 3s infinite linear;
+  -o-transform-style: preserve-3d;
+  -o-transform-origin: left top;
+  -o-animation: right-flap 3s infinite linear;
+  -ms-transform-style: preserve-3d;
+  -ms-transform-origin: left top;
+  -ms-animation: right-flap 3s infinite linear;
+}

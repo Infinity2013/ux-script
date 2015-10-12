@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+Qualcomm Technologies Proprietary and Confidential.
+-->
+<html>
+<head>
+<title>Vellamo - HTML5 Layout Moving Text</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<link rel="stylesheet" href="../common/per_benchmark.css"/>
+<script src="../common/per_benchmark.js"></script>
+<script type="text/javascript">
+/* keep these 2 values in line with the CSS properties below */
+var LAYOUT_PADDING = 2;
+var BORDER_WIDTH = 0;
+
+var DEADBAND_MAX_FPS = 45;
+var DEADBAND_MIN_FPS = 30;
+
+var sampleFPS, lastSampledTime, sampleFrames;
+var repeat = "Vellamo is a mermaid and she is the goddess of the sea. Vellamo is derived from the word <i>velloa</i> which means to rock with the waves.  Vellamo is the power of the ocean and the mistress of the fish. Vellamo lives in an underwater palace of Ahtola which is at the bottom of the sea. Vellamo grows mysterious crops on the ocean floor. Vellamo journeys from the bottom of the sea to the surface of the ocean. Beware men on the surface of the ocean for if she sees you, you will fall under her spell.<br>"
+var current, results;
+var layoutPadding, borderWidth;
+
+var div1, div2, div3, div4, div5
+var continueTest;
+var lastCycle;
+var fontLimitReached = false;
+var cycleBegan;
+var frameInterval;
+var sampleDuration = 500; //minimum of half-second
+var samples;
+var results = {};
+var errorString = "";
+
+var outerGrowing = true; // Initial direction of movement
+var workLoad = 1;
+var MAXDIM = 900;    // Initial layout square dimension
+var cycleTextLength; // Text length for the current cycle
+var cycleFontScale;  // Font size (relative to div size) for current cycle
+var outerLong = Math.floor(2 * MAXDIM / 3);
+var outerMax = Math.floor(5 * MAXDIM / 6);
+var outerMin = Math.floor(5 * MAXDIM / 9);
+
+function createLongString(s, numDouble) {
+  'use strict';
+  var out, i;
+
+  out = s;
+  for (i = 0; i < numDouble; i += 1) {
+    out += out;
+  }
+  return out;
+}
+
+function getFrameRate() {
+  'use strict';
+
+  sampleFrames += 1;
+  var diff = Date.now() - lastSampledTime;
+  if (diff >= sampleDuration) {
+    sampleFPS = sampleFrames / (diff / 1000);
+    sampleFrames = 0;
+    lastSampledTime = Date.now();
+  }
+  return sampleFPS;
+}
+
+function reshape() {
+  'use strict';
+  var currentTime, cycleFps, timePassed, element;
+  var top, topPx, longText, longPx, outerShort, shortText, shortPx, margin, side;
+
+  if (outerGrowing) {
+    outerLong += 2;
+    if (outerLong >= outerMax) {
+      outerGrowing = false;
+    }
+  } else {
+    outerLong -= 2;
+    if (outerLong <= outerMin) {
+      window.clearInterval(frameInterval);
+      currentTime = Date.now();
+      timePassed = currentTime - cycleBegan;
+      cycleFps = (samples / timePassed * 1000);
+      if (lastCycle) {
+        continueTest = false;
+        results.length2 = cycleTextLength;
+        results.fontScale2 = cycleFontScale;
+        results.fps2 = cycleFps;
+        // Calculate approximate word count @ 30 FPS.
+        var avgFps = (results.fps1 + results.fps2) / 2.
+        var avgWords = (results.length1 + results.length2) / 2.
+        results.score = avgFps * avgWords / 30;
+        VellamoBenchmark.endWithResultsJSON(results);
+      }
+      if ((fontLimitReached || cycleFps < DEADBAND_MAX_FPS) && !lastCycle) {
+        lastCycle = true;
+        results.length1 = cycleTextLength;
+        results.fontScale1 = cycleFontScale;
+        results.fps1 = cycleFps;
+      }
+      if (!lastCycle) {
+        workLoad += 1;
+      } if (cycleFps > DEADBAND_MIN_FPS) {
+        // Last cycle repeats previous workload if below deadband
+        workLoad += 1;
+      }
+      if (continueTest) {
+        setupCycle(workLoad);
+        setTimeout(beginCycle, 250);
+        outerGrowing = true;
+      }
+    }
+  }
+
+  top = 0;
+  topPx = top + "px"
+  longText = outerLong - 2 * (layoutPadding + borderWidth);
+  longPx = longText + "px";
+  outerShort = MAXDIM - outerLong;
+  shortText = outerShort - 2 * (layoutPadding + borderWidth);
+  shortPx = shortText + "px";
+  margin = (document.body.clientWidth - (outerLong + outerShort)) / 2;
+
+  div1.style.top = topPx;
+  div1.style.left = margin + "px";
+  div1.style.width = longPx;
+  div1.style.height = shortPx;
+
+  div2.style.top = topPx;
+  div2.style.left = (margin + outerLong) + "px";
+  div2.style.width = shortPx;
+  div2.style.height = longPx;
+
+  div3.style.top = (top + outerLong) + "px";
+  div3.style.left = (margin + outerShort) + "px";
+  div3.style.width = longPx;
+  div3.style.height = shortText - top + "px";
+
+  div4.style.top = (top + outerShort) + "px";
+  div4.style.left = margin + "px";
+  div4.style.width = shortPx;
+  div4.style.height = longText - top + "px";
+
+  div5.style.top = (top + outerShort) + "px";
+  div5.style.left = (margin + outerShort) + "px";
+  side = (MAXDIM - 2 * (outerShort + layoutPadding) - 4*borderWidth) + "px";
+  div5.style.width = side;
+  div5.style.height = side;
+
+  current.style.left = div1.style.left;
+  current.style.width = (longText + shortText) + "px";
+}
+
+function processFrame() {
+  'use strict';
+
+  if (continueTest) {
+    reshape();
+    samples += 1;
+    current.innerHTML = 'FPS: ' + getFrameRate().toFixed(2);
+  } else {
+    window.clearInterval(frameInterval);
+    results.length2 = 0;
+    results.fontScale2 = 0;
+    results.fps2 = 0;
+    results.score = 0;
+    VellamoBenchmark.endWithResultsAndMessage(results, errorString);
+  }
+}
+
+function validateFontSize(expected, actual) {
+  'use strict';
+  var PLUS_MINUS = 0.5; // font size in pixels
+  var fontSizeExpected = parseFloat(expected);
+  var fontSizeActual = parseFloat(actual);
+  if (fontSizeActual < (fontSizeExpected - PLUS_MINUS) ||
+      fontSizeActual > (fontSizeExpected + PLUS_MINUS))
+    return false;
+  return true;
+}
+
+function setupDiv(div, content, fontSize) {
+  'use strict';
+  var style;
+
+  div.innerHTML = content;
+  div.style.fontSize = fontSize;
+  style = window.getComputedStyle(div, null);
+  if (!validateFontSize(fontSize, style.getPropertyValue("font-size"))) {
+    continueTest = false;
+    errorString = "Failed to set font size.";
+  }
+}
+
+function setupCycle(num) {
+  'use strict';
+  var content, fontScale, fontSize, fontPx;
+
+  // Each cycle we double the amount of text..
+  content = createLongString(repeat, num + 2);
+
+  // ... and double the amount of text that will fit
+  // (by dividing by sqrt(2))
+  fontScale = .02 / Math.pow(1.414, num);
+  fontSize = Math.round(MAXDIM * fontScale);
+  if (fontSize > 0) {
+    fontPx = fontSize + "px";
+  } else {
+    fontLimitReached = true;
+    fontPx = "1px";
+  }
+  setupDiv(div1, content, fontPx);
+  setupDiv(div2, content, fontPx);
+  setupDiv(div3, content, fontPx);
+  setupDiv(div4, content, fontPx);
+  setupDiv(div5, content, fontPx);
+
+  cycleTextLength = content.length;
+  cycleFontScale = fontScale;
+}
+
+function beginCycle() {
+  'use strict';
+  // Restart FPS counters for the next cycle
+  cycleBegan = Date.now();
+  lastSampledTime = cycleBegan;
+  samples = 0;
+  sampleFrames = 0;
+  frameInterval = window.setInterval(processFrame, 1000 / 60);  //60 per second
+}
+
+function beginReflow() {
+  'use strict';
+
+  MAXDIM = Math.min(document.body.clientWidth, document.body.clientHeight);
+  outerLong = Math.floor(2 * MAXDIM / 3);
+  outerMax = Math.floor(5 * MAXDIM / 6);
+  outerMin = Math.floor(5 * MAXDIM / 9);
+  continueTest = true;
+
+  current = document.getElementById("current");
+  div1 = document.getElementById("div1");
+  div2 = document.getElementById("div2");
+  div3 = document.getElementById("div3");
+  div4 = document.getElementById("div4");
+  div5 = document.getElementById("div5");
+  setupCycle(workLoad);
+  // NOTE: not parsing the style since these are not inline anymore
+  layoutPadding = LAYOUT_PADDING;
+  borderWidth = BORDER_WIDTH;
+
+  reshape();
+
+  sampleFPS = 0;
+  sampleFrames = 0;
+  setTimeout(beginCycle, 250);
+  lastCycle = false;
+  samples = 0;
+};
+</script>
+<style type="text/css">
+  body {
+    background-color: #1F5487;
+  }
+
+  .box {
+    position: absolute;
+    padding: 2px;
+    border: 0px;
+    color: white;
+    overflow: hidden;
+  }
+
+  #div1 {
+    background-color: #558FB7;
+  }
+  #div2 {
+    background-color: #0A2B38;
+  }
+  #div3 {
+    background-color: #204158;
+  }
+  #div4 {
+    background-color: #2B73A5;
+  }
+  #div5 {
+  }
+</style>
+</head>
+<body onload="VellamoBenchmark.loadOnShellReady(beginReflow)">
+<div id="current" class="test_info">&nbsp;</div>
+<div id="div1" class="box"></div>
+<div id="div2" class="box"></div>
+<div id="div3" class="box"></div>
+<div id="div4" class="box"></div>
+<div id="div5" class="box"></div>
+</body>
+</html>

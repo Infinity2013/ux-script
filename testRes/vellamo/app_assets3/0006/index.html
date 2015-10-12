@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+Qualcomm Technologies Proprietary and Confidential.
+-->
+<html>
+<head>
+<title>Vellamo Canvas Aquarium Test</title>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<link rel="stylesheet" href="../common/per_benchmark.css"/>
+<script src="../common/per_benchmark.js"></script>
+<script src="../common/framecounter.js"></script>
+<script src="../common/animationutils.js"></script>
+<script src="../common/browserdetect.js"></script>
+<script type="text/javascript">
+
+var DEBUG               = false;
+
+var TARGET_FPS          = 30;
+var TARGET_TIME         = 1000 / TARGET_FPS;
+var COUNTDOWN_FRAMES	= 60;
+var MEASURE_FRAMES      = 60;
+var TIMED_START         = 6000;
+var TIME_NEXT_STAGE     = 16000;
+var NEXT_RANDOM_INDEX   = 0;
+var MINIMUM_SPRITES     = 5;
+var USE_PREDETERMINED_ZOOM = true;
+var USE_GETIMAGE_DATA = false;
+var DISABLE_LEGACY_OPTS = true;
+
+var ROTATE_SPRITES      = false;
+var BASE_FISH_SCALE     = 0.30;
+var MARGINW;
+var MARGINH;
+
+var gridImage;
+var bgImage;
+var bgImageOverlay;
+
+var fgCanvasElement;
+var fgContext;
+var bgCanvasElement;
+var bgContext;
+var dPR;
+var bSR;
+var USE_DPI_SCALING = true;
+var DPI_SCALE_CONTEXT = false;
+
+var impl;
+
+var initStage = 3;
+var lowMemory;
+var frameCounter = new FrameCounter(60);
+
+/** Js Library code **/
+function createStruct(input) {
+  var keys = input.split(',');
+  var count = keys.length();
+  function constructor() {
+    for(var ii=0; ii < count; ++ii) {
+      this[keys[ii]] = arguments[i];
+    }
+  }
+  return constructor;
+}
+
+function vellamoLog(input) {
+  console.log(input);
+}
+
+function returnNextRandomScale() {
+
+  var RANDOM_SCALES = [1.1349,0.7909,0.9581,0.7937,0.7701,1.1796,1.2065,0.8339,1.1799,1.1661,0.9585,0.9434,1.0954,1.1154,1.1637,1.2365,0.8698,1.0348,0.9404,0.7972,1.1321,0.9195,0.9912,1.1576,0.8895,0.9698,1.1321,1.0096,0.9852,1.1261,0.8096,1.0586,1.186,0.8143,0.791,1.2323,0.8378,1.0662,0.999,1.0076,0.8676,0.83,1.194,1.0305,1.0251,1.2035,0.8573,1.2234,0.8909,1.1086,1.0267,1.032,1.0427,1.1526,1.1157,1.236,0.8895,1.2438,1.176,1.1139,0.7725,0.8079,0.7944,1.2075,1.1399,0.9901,0.8406,0.8293,1.0927,1.2111,1.1933,0.8237,0.7701,1.198,1.0448,1.0254,1.2477,0.822,0.9286,1.1969,1.2281,0.8496,0.9055,0.8076,0.7763,1.0758,0.7755,1.0195,1.0047,1.1708,0.9158,0.9838,1.1655,1.1289,1.0303,1.2448,0.9607,0.918,1.211,0.9654];
+
+  var scale = RANDOM_SCALES[NEXT_RANDOM_INDEX];
+  NEXT_RANDOM_INDEX++;
+  NEXT_RANDOM_INDEX = NEXT_RANDOM_INDEX > 99 ? 0 : NEXT_RANDOM_INDEX;
+  return scale;
+}
+/** Js Library code **/
+
+/** [Example] migration of the 4 phases of the benchmark **/
+
+var AquariumController = {
+  stage: 0,
+
+  init: function() {
+    aquarium_init1();
+    setTimeout(AquariumController.nextStage, TIME_NEXT_STAGE);
+  },
+
+  nextStage: function() {
+    if (!impl || !impl.getMeasureStarted()) {
+      setTimeout(AquariumController.nextStage, TIME_NEXT_STAGE);
+      return;
+    }
+
+    // end of benchmark, also checking the error conditions
+    VellamoBenchmark.endWithResultsJSON(
+      {
+        avg_sps: impl.getAvgSpritesPerSecond(),
+      }
+    );
+
+    // from now on, we should not communicate and expect to be deleted anytime soon
+  },
+}
+
+
+function getArgs() {
+    'use strict';
+    var args, search, nameValuePairs, i, pair, equalIndex, name, value;
+    args = {};
+    search = document.location.search.substring(1);
+    nameValuePairs = search.split('&');
+    for (i = 0; i < nameValuePairs.length; i += 1) {
+        pair = nameValuePairs[i];
+        equalIndex = pair.indexOf('=');
+        if (equalIndex !== -1) {
+            name = pair.substring(0, equalIndex);
+            value = pair.substring(equalIndex + 1);
+            args[name] = decodeURIComponent(value);
+        }
+    }
+    return args;
+}
+function verifyGridImage() {
+    'use strict';
+//    vellamoLog("verifyGridImage");
+	if (gridImage.complete && gridImage.width===4912 && gridImage.height===634) {
+		aquarium_init2();
+	} else {
+        vellamoLog("gridImage.complete:"+gridImage.complete);
+        vellamoLog("gridImage.width:"+gridImage.width);
+        vellamoLog("gridImage.height:"+gridImage.height);
+		//TODO: retry?
+        vellamoLog("imageLoadFail:gridImage");
+	}
+}
+
+function aquarium_init1() {
+    'use strict';
+    // get canvas references
+    fgCanvasElement = document.getElementById("fgCanvas");
+    fgContext = fgCanvasElement.getContext("2d");
+    bgCanvasElement = document.getElementById("bgCanvas");
+    bgContext = bgCanvasElement.getContext("2d");
+    // dynamically load images
+    gridImage = new Image();
+    gridImage.src = "grid.png";
+    gridImage.onload = function() { verifyGridImage(); };
+    gridImage.onerror = function() {
+        vellamoLog("imageLoadError:gridImage");
+    }
+    bgImage = new Image();
+    bgImage.src = "background.jpg"
+    bgImage.onload = function() { aquarium_init2(); }
+
+    bgImageOverlay = new Image();
+    bgImageOverlay.src = "light_overlay.png";
+    bgImageOverlay.onload = function() { aquarium_init2(); }
+
+    dPR = AnimationUtils.getDevicePixelRatio();
+    bSR = AnimationUtils.getBackingStoreRatio(fgContext);
+}
+
+function aquarium_init2() {
+    'use strict';
+    var urlArgs;
+    if (--initStage != 0) {
+        return;
+    }
+    urlArgs = getArgs();
+    lowMemory = urlArgs.low && urlArgs.low === "true";
+    frameCounter.clear();
+    // start the operation
+    impl = new Impl();
+    impl.Start();
+    // remove the background from the document
+    // it was there just to show something during the loading phase
+    document.body.className='';
+}
+
+
+var Fixel = function (w, h) { this.initialize(w, h); }
+Fixel.prototype = {
+    x:  null, y:  null,
+    vx: null, vy: null,
+    scale: null,
+    angle: null,
+
+    animFrames: null,
+    animFrame: null,
+    kind: null,
+
+    initialize: function(w, h) {
+        this.reposition(w, h);
+        var baseSpeed = (Math.random() + Math.random()) / 2;
+        var baseAngle = Math.random() * 2 * Math.PI;
+
+        this.vx = baseSpeed * Math.cos(baseAngle) / 2;
+        this.vy = baseSpeed * Math.sin(baseAngle) / 4;
+        this.angle = 180 * baseAngle / Math.PI;
+
+        if (!USE_PREDETERMINED_ZOOM)
+          this.scale = 1.0 * (Math.random() + 2.0) / (Math.random() + 2.0);
+        else
+          this.scale = returnNextRandomScale();
+        //console.log("Scale value is " + this.scale);
+
+        this.animFrames = 16;
+        this.animFrame = Math.floor(Math.random() * 16);
+        this.kind = Math.random() < 0.3 ? 1 : 0;
+    },
+
+    updateFishics: function(dT, w, h) {
+        // update position based on speed
+        this.x = Math.max(0, Math.min(w, this.x + (dT * this.vx * w)));
+        this.y = Math.max(0, Math.min(h, this.y + (dT * this.vy * h)));
+        if ((this.x >= (w - MARGINW) && this.vx > 0) || (this.x <= MARGINW && this.vx < 0)) {
+            this.vx = -this.vx;
+            this.angle = 180 - this.angle;
+        }
+        if ((this.y >= (h - MARGINH) && this.vy > 0) || (this.y <= MARGINH && this.vy < 0)) {
+            this.vy = -this.vy;
+            this.angle = -this.angle;
+        }
+
+        // update animation frame (should base this on time?)
+        if (++this.animFrame >= this.animFrames)
+            this.animFrame = 0;
+    },
+
+    reposition: function(w, h) {
+        this.x = MARGINW + Math.random() * (w - 2 * MARGINW);
+        this.y = MARGINH + Math.random() * (h - 2 * MARGINH);
+    },
+}
+
+
+var Impl = function () { this.Init(); }
+Impl.prototype = {
+    fixels: null,
+    usedFixels: null,
+    FW: null,
+    FH: null,
+
+    countdownStarted: null,
+    countdownFrameCounter: null,
+    measureStarted: null,
+    measureCounter: null,
+    measureTime: null,
+    measureSprites: null,
+    measureStartTime: null,
+
+    Init: function() {
+        this.fixels = [];
+        this.usedFixels = 0;
+        this.FW = 307;
+        this.FH = 317;
+        MARGINW = Math.round(0.26 * this.FW / 2);
+        MARGINH = Math.round(0.26 * this.FH / 2);
+
+        window.addEventListener("resize", this.Resize, false);
+        this.Resize();
+    },
+
+    Start: function() {
+
+        this.countdownStarted = false;
+        this.countdownFrameCounter = 0;
+        this.measureStarted = false;
+        this.measureCounter = 0;
+        this.measureTime = 0;
+        this.measureSprites = 0;
+        this.measureStartTime = new Date().getTime();
+
+        // NOTE: this is the main change compared to the Java version.
+        // here we give some time to the rest of the browser stack to
+        // execute before starting a new evaluation (5ms more)
+        //setInterval(function() {impl.Benchmark();}, TARGET_TIME+5);
+        AnimationUtils.animLoop(function() {impl.Benchmark();});
+
+        if (AnimationUtils.isRAFAvailable === false) {
+          USE_GETIMAGE_DATA = true;
+        }
+
+    },
+
+    Benchmark: function() {
+        frameCounter.tick();
+        var actualTime = frameCounter.getLastTimeDelta();
+        this.UpdateFishics();
+        if (lowMemory && actualTime <= 1) {
+            vellamoLog("sanityTestFail:"+actualTime);
+        }
+
+        var actualFixels = this.usedFixels;
+
+        // Debug: Overlay Info
+        if (DEBUG) {
+          // Create div
+          var e = document.getElementById("info");
+          if (!e) {
+            e = document.createElement("div");
+            e.id = "info";
+            e.className = "test_info";
+            document.body.appendChild(e);
+          }
+          e.innerHTML = 't: '+actualTime+', N:'+actualFixels;
+        }
+
+        // adapt the number of fish
+        if (frameCounter.isStable())
+          this.ControlPopulation(TARGET_TIME, actualTime);
+
+        // Measure
+        if (Math.abs(TARGET_TIME - actualTime) < 1)
+            this.countdownStarted = true;
+        if (this.countdownStarted) {
+            this.countdownFrameCounter++;
+            if (this.countdownFrameCounter > COUNTDOWN_FRAMES)
+                this.measureStarted = true;
+        }
+        if (!this.measureStarted) {
+            var elapsed = new Date().getTime() - this.measureStartTime;
+            if (elapsed > TIMED_START) {
+                this.measureStarted = true;
+                MEASURE_FRAMES /= 2;
+            }
+        }
+        if (this.measureStarted) {
+            this.measureCounter++;
+            this.measureTime += actualTime;
+            this.measureSprites += actualFixels;
+//            vellamoLog("measureCounter:"+this.measureCounter);
+//            vellamoLog("measureSprites:"+this.measureSprites);
+//            vellamoLog("measureTime:"+this.measureTime);
+            if (this.measureCounter == MEASURE_FRAMES) {
+                var averageSpritesPerSecond = 1000 * this.measureSprites / this.measureTime;
+                vellamoLog("averageSpritesPerSecond:"+averageSpritesPerSecond);
+            }
+        }
+    },
+
+    getAvgSpritesPerSecond: function() {
+        return 1000 * this.measureSprites / this.measureTime;
+    },
+
+    getMeasureStarted: function() {
+        return this.measureStarted;
+    },
+
+    getFgCanvasWidth: function() {
+        return fgCanvasElement.width;
+    },
+
+    getFgCanvasHeight: function() {
+        return fgCanvasElement.height;
+    },
+
+    getBgCanvasWidth: function() {
+        return bgCanvasElement.width;
+    },
+
+    getBgCanvasHeight: function() {
+        return bgCanvasElement.height;
+    },
+
+    getCurrentFixels: function() {
+        return this.usedFixels;
+    },
+
+    resetPopulation: function() {
+        this.usedFixels = 0;
+    },
+
+    Resize: function(e) {
+        if (USE_DPI_SCALING) {
+          var ratio = dPR / bSR;
+          WIDTH = window.innerWidth * ratio;
+          HEIGHT = window.innerHeight * ratio;
+          bgCanvasElement.width = WIDTH;
+          bgCanvasElement.height = HEIGHT;
+          fgCanvasElement.width = WIDTH;
+          fgCanvasElement.height = HEIGHT;
+          bgCanvasElement.style.width = window.innerWidth + 'px';
+          bgCanvasElement.style.height = window.innerHeight + 'px';
+          fgCanvasElement.style.width = window.innerWidth + 'px';
+          fgCanvasElement.style.height = window.innerHeight + 'px';
+          if (DPI_SCALE_CONTEXT) {
+            bgContext.scale(ratio, ratio);
+            fgContext.scale(ratio, ratio);
+          }
+        } else {
+          WIDTH = window.innerWidth;
+          HEIGHT = window.innerHeight;
+          bgCanvasElement.width = WIDTH;
+          bgCanvasElement.height = HEIGHT;
+          fgCanvasElement.width = WIDTH;
+          fgCanvasElement.height = HEIGHT;
+        }
+        bgContext.clearRect(0, 0, WIDTH, HEIGHT);
+        bgContext.drawImage(bgImage, 0, 0, WIDTH, HEIGHT);
+    },
+
+    UpdateFishics: function() {
+        // [Web Only] make canvas Sync 1/2
+        if (USE_GETIMAGE_DATA)
+          fgContext.getImageData(0,0,1,1);
+
+        var startTime = new Date().getTime();
+
+        // Disable legacy opts
+        if (DISABLE_LEGACY_OPTS) {
+          fgContext.clearRect(0, 0, WIDTH/2, HEIGHT/2);
+          fgContext.clearRect(WIDTH/2, 0, WIDTH, HEIGHT);
+          fgContext.clearRect(0, HEIGHT/2, WIDTH, HEIGHT);
+        } else {
+          fgContext.clearRect(0, 0, WIDTH, HEIGHT);
+        }
+
+        for (var fIdx = 0; fIdx < this.usedFixels; fIdx++) {
+            var f = this.fixels[fIdx];
+            f.updateFishics(TARGET_TIME / 1000.0, WIDTH, HEIGHT);
+
+            var fScale = BASE_FISH_SCALE * f.scale;
+            var fInversion = ((f.vx < 0 && !ROTATE_SPRITES) ? -1.0 : 1.0);
+
+            fgContext.save();
+            fgContext.translate(f.x, f.y);
+            fgContext.scale(fInversion*fScale, fScale);
+            if (ROTATE_SPRITES)
+                fgContext.rotate(f.angle);
+            fgContext.drawImage(gridImage, this.FW * f.animFrame, this.FH * f.kind, this.FW, this.FH, -153, -158, this.FW, this.FH);
+            fgContext.restore();
+        }
+
+        // [Web Only] make canvas Sync 2/2
+        if (USE_GETIMAGE_DATA)
+          fgContext.getImageData(0,0,1,1);
+
+        var elapsed = new Date().getTime() - startTime;
+        fgContext.drawImage(bgImageOverlay, 0, 0, WIDTH, HEIGHT);
+        return elapsed;
+    },
+
+    ControlPopulation: function(targetTime, actualTime) {
+        // find out how many fish to create/remove
+        var fixelDelta = 0;
+        var timeError = targetTime - actualTime;
+        if (timeError > 10)
+            fixelDelta = 5;
+        else if (timeError < -10)
+            fixelDelta = -2;
+        else {
+            if (timeError > 0)
+                fixelDelta = Math.round(timeError / 2);
+            else
+                fixelDelta = Math.round(timeError / 4);
+        }
+
+//        vellamoLog("targetTime:"+targetTime);
+//        vellamoLog("actualTime:"+actualTime);
+//        vellamoLog("timeError:"+timeError);
+//
+//        vellamoLog("fixelDelta:"+fixelDelta);
+//        vellamoLog("usedFixels:"+this.usedFixels);
+//        vellamoLog("fixels.length:"+this.fixels.length);
+
+        // add missing
+        if (fixelDelta > 0) {
+            var realMissing = this.usedFixels + fixelDelta - this.fixels.length;
+            for (var i = this.usedFixels; i < this.fixels.length; i++)
+                this.fixels[i].reposition(WIDTH, HEIGHT);
+            for (var i = 0; i < realMissing; i++)
+                this.fixels.push(new Fixel(WIDTH, HEIGHT));
+            this.usedFixels += fixelDelta;
+        }
+
+        // remove exceeding
+        if (fixelDelta < 0) {
+            this.usedFixels += fixelDelta;
+            if (this.usedFixels < MINIMUM_SPRITES) {
+                this.usedFixels = MINIMUM_SPRITES;
+                for (var i = this.fixels.length; i < this.usedFixels; i++) {
+                    this.fixels.push(new Fixel(WIDTH, HEIGHT));
+                }
+            }
+        }
+    },
+}
+
+
+</script>
+<style type="text/css">
+  .initial-background {
+    background-image: url('background.jpg');
+    background-position: left center;
+    background-size: cover;
+    background-size: 100% 100%;
+  }
+  #bgCanvas {
+  }
+  #fgCanvas {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+  }
+</style>
+</head>
+<body class="initial-background" onload="VellamoBenchmark.loadOnShellReady(AquariumController.init)">
+<canvas id="bgCanvas"></canvas>
+<canvas id="fgCanvas"></canvas>
+</body>
+</html>

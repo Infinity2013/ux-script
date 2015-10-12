@@ -1,3 +1,5 @@
+adb root
+
 current=$(pwd)
 for push in $(find -name "push.sh")
 do

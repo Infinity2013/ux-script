@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+Qualcomm Technologies Proprietary and Confidential.
+-->
+<html>
+<head>
+<title>Vellamo Crossfading Benchmark</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<link rel="stylesheet" href="../common/per_benchmark.css"/>
+<script src="../common/per_benchmark.js"></script>
+<script src="../common/animationutils.js"></script>
+<script src="crossfading.js"></script>
+<script>
+var imagesToLoad = 2;
+var imagesReady = false;
+var shellReady = false;
+var crossfader = undefined;
+var eLabel = undefined;
+var labelUpdateTimer = undefined;
+
+function onImageLoaded() {
+  --imagesToLoad;
+  if (imagesToLoad == 0) {
+    var eCanvas = document.getElementById('surface');
+    var eImage1 = document.getElementById('image1');
+    var eImage2 = document.getElementById('image2');
+    crossfader = new Crossfader(eCanvas, eImage1, eImage2, window.console);
+
+    eLabel = document.getElementById('info');
+    eLabel.innerHTML = 'Starting...';
+
+    imagesReady = true;
+    startTest();
+  }
+}
+
+function onShellReady() {
+  shellReady = true;
+  startTest();
+}
+
+function startTest() {
+  // ensure it's not too early
+  if (imagesReady == false || shellReady == false)
+    return;
+
+  AnimationUtils.animLoop(crossfader.loop);
+  window.setTimeout(endTest, 6000);
+  labelUpdateTimer = window.setInterval(updateLabel, 1000);
+}
+
+function updateLabel() {
+  var crossfadeRate = crossfader.crossfadeRate();
+  var eLabel = document.getElementById('info');
+  var text = 'Speed: ' + crossfadeRate.toFixed(1) + ' crossfades/sec';
+  if (crossfader !== undefined && crossfader.loadScale != 1)
+    text += ' (scale: '+crossfader.loadScale+')';
+  eLabel.innerHTML = text;
+}
+
+function endTest() {
+  var results = {
+    xps: crossfader.crossfadeRate()
+  };
+  // pass the loadScale if present
+  if (crossfader.loadScale != 1)
+    results.loadScale = crossfader.loadScale;
+  VellamoBenchmark.endWithResultsJSON(results);
+  window.clearInterval(labelUpdateTimer);
+  crossfader.dispose();
+}
+</script>
+<style type="text/css">
+  #surface {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+</head>
+<body onload="VellamoBenchmark.loadOnShellReady(onShellReady);">
+<canvas id="surface" width="512" height="512"></canvas>
+<img id="image1" src="frame0.jpg" style="display: none" width="512" height="512" onload="onImageLoaded()">
+<img id="image2" src="frame1.jpg" style="display: none" width="512" height="512" onload="onImageLoaded()">
+<div id="info" class="test_info">&nbsp;</div>
+</body>
+</html>

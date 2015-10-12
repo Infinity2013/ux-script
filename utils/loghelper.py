@@ -101,7 +101,7 @@ def parse2LogcatElement(logcatLog):
 <6>[    0.115842] Last level dTLB entries: 4KB 128, 2MB 16, 4MB 16, 1GB 0
 '''
 def parse2DmesgElement(dmesgLog):
-    r = re.match(r"<\d+>\[(?P<ts>\s*\d+.\d+)\]\s(?P<content>.*$)", dmesgLog)
+    r = re.match(r"(<\d+>)*\[(?P<ts>\s*\d+.\d+)\]\s(?P<content>.*$)", dmesgLog)
     if r is None:
         return DmesgElement(0, "wrong")
     return DmesgElement(float(r.group("ts")) * 1000, r.group("content"))

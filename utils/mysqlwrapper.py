@@ -16,7 +16,7 @@ class MySQLdbWrapper():
     def __init__(self):
         global MYSQL
         if MYSQL is True:
-            conn = MySQLdb.connect(host='wxl-compile', user='root', passwd='1', port=3306)
+            conn = MySQLdb.connect(host='wxl-wow', user='root', passwd='1', port=3306)
             cur = conn.cursor()
             conn.select_db("ux")
             self.cur = cur

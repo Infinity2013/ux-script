@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html style="overflow:visible">
+<head>
+<meta charset="UTF-8">
+<title>Ocean Times</title>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<link rel="stylesheet" href="../common/per_benchmark.css"/>
+<script src="../common/per_benchmark.js"></script>
+<script src="../common/framecounter.js"></script>
+<script src="../common/animationutils.js"></script>
+<link rel="stylesheet" type="text/css" href="styles/styles.css">
+<script>
+var frameCounter = new FrameCounter(60);
+var requestId;
+var scale = 1.0;
+var missedTicks = 0;
+var countAtY;
+var expectedY = 0;
+
+function resetStats() {
+  frameCounter.clear();
+}
+
+function tickAndScroll() {
+  if (didScroll()) {
+    // Advance the scroll offset
+    expectedY = 20 + scrollOffset();
+    frameCounter.tick();
+    countAtY = 0;
+  } else {
+    countAtY++;
+    missedTicks++
+  }
+  // Some browsers (i.e. Firefox) do not queue scroll commands
+  // and hence repeated calls to scrollTo is needed to advance
+  // the scroll when the browser is not able to keep up
+  window.scrollTo(0, expectedY);
+  Controller.nextStage();
+}
+
+function scrollOffset() {
+  var de = document.documentElement;
+  var db = document.body;
+  var w = window;
+  if (typeof(w.pageYOffset) == 'number')
+    return w.pageYOffset;
+  else if (db && db.scrollTop)
+    return db.scrollTop;
+  else if (de && de.scrollTop)
+    return de.scrollTop;
+  return 0;
+}
+
+function didScroll() {
+  if (scrollOffset() == expectedY)
+    return true;
+  return false;
+}
+
+function maxHeight() {
+  var de = document.documentElement;
+  var db = document.body;
+  var maxH = Math.max(de.scrollHeight, de.clientHeight, de.offsetHeight, db.scrollHeight, db.clientHeight, db.offsetHeight);
+  // Workaround for firefox since it doesn't support zoom (see computeAndSetScale())
+  if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+    maxH *= scale;
+  }
+  return maxH;
+}
+
+function maxWidth() {
+  var de = document.documentElement;
+  var db = document.body;
+  var maxW = Math.max(de.scrollWidth, de.clientWidth, de.offsetWidth, db.scrollWidth, db.clientWidth, db.offsetWidth);
+  return maxW;
+}
+
+function canScrollDown() {
+  var MAX_COUNT_AT_Y_POSITION = 10;
+  return ((countAtY < MAX_COUNT_AT_Y_POSITION) && (maxHeight() > scrollOffset() + window.innerHeight));
+}
+
+function scrollingIncomplete() {
+  var MINIMUM_SCROLL_PERCENT = 0.50;
+  var minimumScroll = maxHeight() * MINIMUM_SCROLL_PERCENT;
+  return (scrollOffset() < minimumScroll);
+}
+
+function initTest() {
+  window.scrollTo(0,0);
+  missedTicks = 0;
+  countAtY = 0;
+  expectedY = 0;
+  resetStats();
+  setTimeout(tickAndScroll, 1000);
+}
+
+function computeAndSetScale() {
+  var DEFAULT_SCALE = 1.0;
+  var SCALE_MULTIPLIER = 0.8;
+  var MINIMUM_SCALE_THRESHOLD = 0.5;
+  var MINIMUM_DOC_COVERAGE = 0.90;
+  scale = DEFAULT_SCALE;
+  var docWidth = maxWidth();
+  while ((window.innerWidth) < (docWidth * scale * MINIMUM_DOC_COVERAGE)
+    && (scale > MINIMUM_SCALE_THRESHOLD)) {
+    scale = scale * SCALE_MULTIPLIER;
+  }
+  if (scale != DEFAULT_SCALE) {
+    document.body.style.zoom = scale;
+    document.body.style.MozTransform = 'scale('+scale+')';
+    document.body.style.MozTransformOrigin = 'left top';
+  }
+}
+
+/** [Example] migration of the 4 phases of the benchmark **/
+var Controller = {
+  disposing: false,
+
+  init: function() {
+    computeAndSetScale();
+    // Cannot call scrollTo during the onLoad callback
+    setTimeout(initTest, 250);
+    // revert back to stage zero when the benchmark is being disposed
+    VellamoBenchmark.onDisposeCallback = function() {
+      Controller.disposing = true;
+    }
+  },
+
+  nextStage: function() {
+    if (canScrollDown()) {
+      //setTimeout(scrollPage, 16);
+      requestId = AnimationUtils.requestAnimFrame(tickAndScroll);
+      return;
+    }
+
+    // Reached the bottom of the page
+    Controller.averageFps = frameCounter.getAverageFps();
+    Controller.smoothnessError = frameCounter.getSmoothnessMse();
+    Controller.numberOfFrames = frameCounter.getNumFrames();
+    Controller.missedTicks = missedTicks;
+    Controller.pageScale = scale;
+
+    if (scrollingIncomplete()) {
+      VellamoBenchmark.endWithError('Scrolling incomplete', 1);
+    } else {
+      VellamoBenchmark.endWithResultsJSON(
+        {
+          average_fps: Controller.averageFps,
+          smoothness_error: Controller.smoothnessError,
+          page_scale: Controller.pageScale,
+          number_of_frames: Controller.numberOfFrames,
+          missed_ticks: Controller.missedTicks,
+        }
+      );
+    }
+    // from now on, we should not communicate and expect to be deleted anytime soon
+  },
+}
+
+function onLoad() {
+  // Handle the embedding into Load'N'Reload
+  var queryDict = {}
+  location.search.substr(1).split("&").forEach(function(item) {queryDict[item.split("=")[0]] = item.split("=")[1]})
+  if (queryDict["load"]) {
+    // in this case, we're done, just want to load the page
+    VellamoBenchmark.endWithResultsJSON({ loaded212: 1, fail: 0 });
+    return;
+  }
+
+  // Scrolling Benchmark
+  VellamoBenchmark.loadOnShellReady(Controller.init)
+}
+</script>
+</head>
+<body onload="onLoad()" style="overflow:visible">
+<div id="wrapper">
+<ul id="memberTools">
+<li><a href="http://www.quicinc.com/" target="_blank">Love It</a></li>
+<li><a href="http://www.quicinc.com/">Surf In</a></li>
+<li><a href="http://www.quicinc.com/">Register Your Board</a></li>
+</ul>
+<div class="tabsContainer">
+<ul id="mainTabs" class="tabs" style="margin: 0">
+<li class="first selected"><a href="#">Treasure</a></li>
+<li><a href="#">Adventure</a></li>
+<li><a href="#">Crepuscular Creatures</a></li>
+<li><a href="#">Undersea Agriculture</a></li>
+<li><a href="#">Siren Calls</a></li>
+</ul>
+</div>
+
+<div id="page">
+<div id="masthead">
+<img id="mastheadLogo" width="379" height="64" alt="Ocean Times" src="rimages/ocean_times_logo.png"/>
+<div id="date"><p>Today, July 4, 2016. <span id="lastUpdate">Last Update: </span><span class="timestamp">1:37 PM PT</span></p></div>
+</div>
+
+<div id="breakingnews">
+<marquee behavior="scroll" direction="left" scrollamount="10">BREAKING NEWS: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet, nisi vel scelerisque euismod, est urna malesuada urna, sit amet dictum justo velit at ipsum. Nulla facilisi. Vivamus sed ornare erat. Nullam feugiat malesuada est, pulvinar interdum justo tempus eu. Vivamus vitae nulla odio. In hac habitasse platea dictumst. Praesent eleifend libero quis ipsum condimentum vitae feugiat eros ullamcorper.</marquee>
+</div>
+<div id="toolbar">
+<div id="toolbarSearch">
+<form id="searchForm" name="searchForm" method="get" action="http://www.quicinc.com/">
+<input id="searchQuery" name="query" class="text"/>
+<input id="searchSubmit" title="Search" width="54" height="19" alt="Search" type="image" src="images/navigate_button.gif">
+</form>
+</div>
+
+<div id="toolItems">
+<a href="http://www.quicinc.com/" target="_blank">Subscribe to Tablet Delivery</a> | <a href="http://www.quicinc.com/">Personalize Your Weather</a>
+</div>
+
+</div>
+
+<div id="main">
+<div class="nav column firstColumnGroup">
+<div class="navHomeEdition">
+<p><a href="globalEdition.html">Switch to<br/><strong>Global Edition</strong><img src="images/arrow-right-3x5.gif" width="3" height="5" alt="right arrow icon"/></a></p>
+</div>
+<div class="navFeatured">
+<ul class="flush featured">
+<li><a href="http://www.quicinc.com/">Jobs</a></li>
+<li><a href="http://www.quicinc.com/">Boats</a></li>
+<li><a href="http://www.quicinc.com/">Marinas</a></li>
+<li class="lastItem"><a href="http://www.quicinc.com/">All Classifieds</a></li>
+</ul>
+</div>
+
+<div class="navigationHome">
+<ul class="flush primary">
+<li id="navWorld"><a href="http://www.quicinc.com/">World</a></li>
+<li id="navPolitics"><a href="http://www.quicinc.com/">Politics</a></li>
+<li id="navScience"><a href="http://www.quicinc.com/">Science</a></li>
+<li id="navBusiness"><a href="http://www.quicinc.com/">Environment</a></li>
+<li id="navDealbook"><a href="http://www.quicinc.com/">Technology</a></li>
+<li id="navTechnology"><a href="http://www.quicinc.com/">Climate</a></li>
+<li id="navSports"><a href="http://www.quicinc.com/">Sports</a></li>
+<li id="navHealth"><a href="http://www.quicinc.com/">Health</a></li>
+<li id="navOpinion"><a href="http://www.quicinc.com/">Opinion</a></li>
+<li id="navTravel"><a href="http://www.quicinc.com/">Travel</a></li>
+</ul>
+<div class="columnGroup singleRule">
+<ul class="flush secondary multiline">
+<li><a href="http://www.quicinc.com/">All Blogs</a></li>
+<li><a href="http://www.quicinc.com/">Classifieds</a></li>
+<li><a href="http://www.quicinc.com/">Corrections</a></li>
+<li><a href="http://www.quicinc.com/">Education</a></li>
+<li><a href="http://www.quicinc.com/">First Look</a></li>
+<li><a href="http://www.quicinc.com/">Learning Network</a></li>
+<li><a href="http://www.quicinc.com/">Multimedia</a></li>
+<li><a href="http://www.quicinc.com/">Podcasts</a></li>
+<li><a href="http://www.quicinc.com/">Public Editor</a></li>
+<li><a href="http://www.quicinc.com/">Video</a></li>
+<li><a href="http://www.quicinc.com/">Weather</a></li>
+<li><a href="http://www.quicinc.com/">Week in Review</a></li>
+</ul>
+</div>
+<div class="columnGroup singleRule">
+<h6 class="columnHead">Services</h6>
+<ul class="flush secondary multiline">
+<li><a href="http://www.quicinc.com/">My Alerts</a></li>
+<li><a href="http://www.quicinc.com/">OT Mobile</a></li>
+<li><a href="http://www.quicinc.com/">OT Store</a></li>
+<li><a href="http://www.quicinc.com/">Ocean Times Reader</a></li>
+<li><a href="http://www.quicinc.com/">Skimmer</a></li>
+<li><a href="http://www.quicinc.com/">News Wire</a></li>
+</ul>
+</div>
+<div class="columnGroup singleRule">
+<h6 class="columnHead">Newspaper</h6>
+<ul class="flush secondary multiline">
+<li><a href="http://www.quicinc.com/">OT Home Delivery</a></li>
+<li><a href="http://www.quicinc.com/">Customer Care</a></li>
+<li><a href="http://www.quicinc.com/">Community Affairs</a></li>
+<li><a href="http://www.quicinc.com/">Events</a></li>
+</ul>
+</div>
+<div class="columnGroup singleRule">
+<h6 class="columnHead">About Us</h6>
+<ul class="flush secondary multiline">
+<li><a href="http://www.quicinc.com/">About the Co.</a></li>
+<li><a href="http://www.quicinc.com/">About QCOM</a></li>
+<li><a href="http://www.quicinc.com/">Advertise with us</a></li>
+</ul>
+</div>
+</div>
+
+</div>
+
+<div id="columnA">
+<div class="story">
+<h2><a href="http://www.quicinc.com/">Another Surfer Gone Missing - Once Again: Was Vellamo Involved?</a></h2>
+<h6 class="byline">By V-TEAM. <span class="timestamp">2:20 PM PT</span></h6>
+<p class="summary">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet, nisi vel scelerisque euismod, est urna malesuada urna, sit amet dictum justo velit at ipsum. Nulla facilisi. Vivamus sed ornare erat. Nullam feugiat malesuada est, pulvinar interdum justo tempus eu. Vivamus vitae nulla odio. In hac habitasse platea dictumst. Praesent eleifend libero quis ipsum condimentum vitae feugiat eros ullamcorper.</p>
+<ul class="refer">
+<li><a href="http://www.quicinc.com/">Press Briefing</a><span class="timestamp">11:20 AM PT</span></li>
+<li><a href="http://www.quicinc.com/"><img src="images/document_icon.gif" alt="Documents" border="0" height="12" width="10"> The Report </a></li>
+<li style="background-image: none; padding-left: 0pt;"><img src="images/comment_icon.gif" alt="comment icon" style="margin-right: 3px; padding-top: 3px;" border="0"><span class="commentCountLink"><a href="#">Comments</a></span></li>
+</ul>
+</div>
+<div class="columnGroup last">
+<h6 class="kicker">Lord Chandhok Island</h6>
+<div class="story">
+<ul class="headlinesOnly">
+<li><h5><a href="http://www.quicinc.com/">Aenean at iaculis sapien.</a><span class="timestamp">1:23 PM PT</span></h5></li>
+<li><h5><a href="http://www.quicinc.com/">Integer non pulvinar ligula.</a></h5></li>
+<li><h5><a href="http://www.quicinc.com/">Quisque ac nibh sem, vitae dignissim lacus.</a></h5></li>
+<li><h5><a href="http://www.quicinc.com/">Sed eu arcu at erat gravida condimentum.</a></h5></li>
+</ul>
+</div>
+</div>
+
+</div>
+<div id="columnB">
+<div class="image">
+<a href="http://www.quicinc.com/"><img src="rimages/canvasrotate_killah.jpg" alt="Haiti" height="191" width="338"></a>
+</div>
+<h3><a href="http://www.quicinc.com/"><img src="images/video_icon.gif" alt="Video">Exclusive Video. His last appearance in the CanvasRotate benchmark!</a></h3>
+<h6 class="byline">By MARK BAPST</h6>
+<p class="summary">Morbi non ante et nunc viverra blandit sit amet vitae ligula. Praesent id eros mauris, vitae suscipit orci. Fusce rutrum enim in orci posuere sit amet malesuada felis gravida. Maecenas imperdiet lobortis felis.</p>
+<ul class="refer">
+<li><a href="http://www.quicinc.com/"><img src="images/video_icon.gif" alt="Video" width="12" height="9" border="0"> Video: Part I</a> | <a href="http://www.quicinc.com/"><img src="images/interactive_icon.gif" alt="Interactive" width="9" height="9" border="0"> Interactive: Then and Now</a> | <a href="http://www.quicinc.com/">Ocean Times Topics</a></li>
+<li><a href="http://www.quicinc.com/"></a>Lord Chandhok Island Marine Park</li>
+</ul>
+<div class="story" style="margin-top:6px;">
+<h5>Aenean felis eros, varius scelerisque eleifend ac, pellentesque eget est.</h5>
+<p class="summary">Nam mollis mattis nisl in fringilla. Sed nunc risus, lobortis a tristique ornare, rutrum at purus. Pellentesque urna tellus, gravida et venenatis id, sagittis eget erat. Fusce gravida molestie magna, at venenatis nunc vestibulum eu.</p>
+<ul class="refer">
+<li><a href="http://www.quicinc.com/">OceanCast Archive</a></li>
+</ul>
+</div>
+<div class="story">
+<h5><a href="http://www.quicinc.com/">Donec et ante dolor, eu bibendum purus.</a></h5>
+<h6 class="byline">By JON KIES and DANIEL GUEST <span class="timestamp">2:43 PM PT</span></h6>
+<p class="summary">Nulla elementum sem a sem malesuada iaculis laoreet sem euismod. Nullam sodales congue lectus, aliquet sodales mi dignissim in. Nullam nec dolor neque, in commodo leo.</p>
+</div>
+<h6 class="kicker"><img src="images/interactive_icon.gif" alt="Interactive" width="9" height="9" border="0"> Multimedia Feature</h6>
+<h5><a href="http://www.quicinc.com/">Sed cursus condimentum diam id lacinia.</a></h5>
+<p class="summary">Phasellus facilisis nisl sit amet nulla ullamcorper euismod.</p>
+
+</div>
+<div id="columnC">
+<div class="story">
+<h4 class="sectionHeaderHome"><a href="http://www.quicinc.com/">Opinion</a></h4>
+<h6 class="kicker">CONSERVATION</h6>
+<h5><a href="http://www.quicinc.com/">Aliquam ac dui neque, ut sagittis orci.</a></h5>
+<p class="summary">Quisque mi quam, faucibus vel ullamcorper vel, tempor vel lectus. Cras at arcu velit, non tincidunt dolor. Cras vel massa quis ante ultricies molestie vel bibendum nisi. In ac porta massa. Nunc vehicula tincidunt ornare. Cras volutpat eros at risus varius ac pellentesque enim feugiat. Quisque sed mi tortor, non rutrum nisi.</p>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Pellentesque a nunc vel metus dapibus vulputate.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Quisque magna lectus, adipiscing id vehicula vitae, condimentum in arcu.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">In non eros sed ipsum imperdiet accumsan a sed velit.</a></h6></li>
+<li class="flushBottom"><h6><a href="http://www.quicinc.com/">Letters</a></h6></li>
+</ul>
+</div>
+<div class="singleRuleDivider"></div>
+<div class="story">
+<div class="kicker">More in Opinion</div>
+<h5><a href="http://www.quicinc.com/">Duis et elit nisl, sit amet molestie enim.</a></h5>
+<p class="summary">Nunc molestie interdum purus, a pellentesque sem rhoncus eu.</p>
+<ul class="headlinesOnly flushBottom">
+<li><h6><a href="http://www.quicinc.com/">Donec scelerisque faucibus neque.</a></h6></li>
+<li class="flushBottom"><h6 class="multilineIcon"><a href="http://www.quicinc.com/">Donec et ante dolor, eu bibendum purus.</a></h6></li>
+</ul>
+</div>
+<div class="singleRuleDivider"></div>
+<div id="stockModule">
+<h4><a href="http://www.quicinc.com/">Markets &raquo;</a><span class="stockTime">At 12:17 PM PT</span></h4>
+<table>
+<tr>
+<th>S.&amp;P. 500</th>
+<th>Dow</th>
+<th>Nasdaq</th>
+</tr>
+<tr>
+<td class="stockTotal">1,285.87</td>
+<td class="stockTotal">11,772.52</td>
+<td class="stockTotal">2,766.23</td>
+</tr>
+<tr>
+<td>+11.38</td>
+<td>+100.65</td>
+<td>+16.77</td>
+</tr>
+<tr>
+<td>+0.89%</td>
+<td>+0.84%</td>
+<td>+0.65%</td>
+</tr>
+</table>
+<form id="" class="searchForm">
+<div><label for="qsearchQuery">Get Quotes</label>
+<p id="myPortfolios"><a href="http://www.quicinc.com/">My Portfolios &raquo;</a></p>
+<input id="qsearchQuery" name="symb" type="text" onblur="if(this.value=='')this.value='Shells, Waves';" onfocus="if(this.value=='Shells, Waves')this.value='';" value="Shells, Waves"/>
+<div class="querySuggestions" style="display:none"></div>
+<input id="searchSubmit" type="image" src="images/go.gif"></div>
+</form>
+<div class="singleRuleDivider"></div>
+</div>
+
+</div>
+<div id="columnD">
+<div id="facebookContainer" style="min-height: 315px;" class="loggedOut">
+<div class="inset"><a href=""><img src="images/facebook.png" width="160" height="22"/></a><br/>
+<p class="caption">Log in to see what your friends are sharing on oceantimes.com. <span id="fbInfo"><a href="http://www.quicinc.com/">Privacy Policy</a> | <a title="" href="http://www.quicinc.com/">What's This?</a></span></p>
+<div class="singleRuleDivider"></div>
+<div><h4 class="sectionHeaderHome">What's Popular Now <img src="images/facebook.gif" class="inTextImage"></h4></div>
+<div class="subColumns subColumn-2 layout">
+<div class="activity">
+<img width="50" height="50" src="rimages/coin.jpg" class="runaroundRight">
+<p class="popular"><a href="http://www.quicinc.com/">Quisque vel est elit. Phasellus nisi dolor, rhoncus ut lobortis nec, ornare a elit.</a></p>
+</div>
+<div class="activity">
+<img width="50" height="50" src="rimages/nautilus_thumb.jpg" class="runaroundRight">
+<p class="popular"><a href="http://www.quicinc.com/">In non rhoncus lorem. Nam lectus neque, auctor non faucibus ut, rutrum eget mi.</a></p>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<div id="columnE">
+<div id="columnAA">
+<div class="story">
+<h3><a href="http://www.quicinc.com/">Donec mi purus, feugiat ac mollis eu, consectetur non quam.</a></h3>
+<h6 class="byline">By THE ASSOCIATED PRESS <span class="timestamp">32 minutes ago</span></h6>
+<p class="summary">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet, nisi vel scelerisque euismod, est urna malesuada urna, sit amet dictum justo velit at ipsum. Nulla facilisi. Vivamus sed ornare erat.</p>
+</div>
+<div class="story">
+<h3><a href="http://www.quicinc.com/">
+Aenean ac lorem aliquet risus semper interdum vitae ut risus.</a></h3>
+<h6 class="byline">By RICHARD LANKFORD <span class="timestamp">12:50 PM PT</span></h6>
+<div class="thumbnail">
+<a href="http://www.quicinc.com/"><img src="rimages/sunspider.jpg" width="75" height="75" alt="" border="0"/></a>
+</div>
+<p class="summary">Morbi non ante et nunc viverra blandit sit amet vitae ligula. Praesent id eros mauris, vitae suscipit orci. Fusce rutrum enim in orci posuere sit amet malesuada felis gravida. Maecenas imperdiet lobortis felis. Quisque mi quam, faucibus vel ullamcorper vel, tempor vel lectus.</p>
+<ul class="refer">
+<li><a href="http://www.quicinc.com/">Expedition Blue Planet,</a></li>
+</ul>
+</div>
+
+</div>
+<div id="columnBB">
+<div class="story">
+<h5><a href="http://www.quicinc.com/">
+Curabitur venenatis elit id diam hendrerit pulvinar.</a></h5>
+<h6 class="byline">
+By MARK BOYNS <span class="timestamp">48 minutes ago</span>
+</h6>
+<p class="summary">
+Nullam feugiat malesuada est, pulvinar interdum justo tempus eu. Vivamus vitae nulla odio. In hac habitasse platea dictumst.</p>
+<ul class="refer">
+<li><a href="http://www.quicinc.com/">Nonprofit blasts plan to sink USS Arthur W. Radford for artificial reef</a><span class="timestamp">10:28 AM PT</span></li>
+</ul>
+</div>
+<div class="story">
+<h6 class="kicker">SCIence NOW</h6>
+<h5><a href="http://www.quicinc.com/">
+Aenean nibh libero, luctus id elementum eu, lacinia vitae arcu.</a></h5>
+<h6 class="byline">By KATHY C. SEYAMA <span class="timestamp">39 minutes ago</span></h6>
+<p class="summary">Cras at arcu velit, non tincidunt dolor. Cras vel massa quis ante ultricies molestie vel bibendum nisi. In ac porta massa. Nunc vehicula tincidunt ornare. Cras volutpat eros at risus varius ac pellentesque enim feugiat. Quisque sed mi tortor, non rutrum nisi.</p>
+</div>
+<div class="columnGroup last">
+<h6 class="kicker">More News</h6>
+<div class="story">
+<ul class="headlinesOnly">
+<li><h5><a href="http://www.quicinc.com/">Etiam vitae neque velit.</a><span class="timestamp">8:10 AM PT</span></h5></li>
+<li><h5><a href="http://www.quicinc.com/">Curabitur consectetur ornare ante, id molestie massa venenatis in.</a><span class="timestamp">9 minutes ago</span></h5>
+</li>
+</ul>
+</div>
+</div>
+
+</div>
+<div id="columnCC">
+<div class="story">
+<h5><a href="http://www.quicinc.com/">Sed cursus condimentum diam id lacinia.</a></h5>
+<h6 class="byline">By SMOGLIE <span class="timestamp">45 minutes ago</span></h6>
+<div class="thumbnail">
+<a href="http://www.quicinc.com/"><img src="rimages/nemo2.jpg" width="75" height="75" alt="Blake Gwinn, left, and James White in the operations room at the Federal Reserve Bank of New York." border="0"/></a>
+</div>
+<p class="summary">
+Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed ornare tempus pellentesque. Curabitur luctus ipsum at neque malesuada mattis. In non rhoncus lorem. Nam lectus neque, auctor non faucibus ut, rutrum eget mi.</p>
+</div>
+<div class="columnGroup last">
+<h6 class="kicker">On the Blogs</h6>
+<div class="story">
+<ul class="headlinesOnly">
+<li><h5><a href="http://www.quicinc.com/">Nunc nec nisi ante, at laoreet enim.</a></h5></li>
+<li><h5><a href="http://www.quicinc.com/">Aliquam sed turpis ut magna consequat tristique.</a></h5></li>
+</ul>
+</div>
+</div>
+
+</div>
+<div id="columnDE">
+<div id="columnDD">
+<h4><a href="http://www.quicinc.com/">Travel &raquo;</a></h4>
+<div class="story">
+<h5><a href="http://www.quicinc.com/">Suspendisse aliquet molestie euismod.</a></h5>
+<div class="thumbnail"><a href="http://www.quicinc.com/"><img src="rimages/pixelblender.jpg" alt="The 41 Places to Go in 2015" width="75" height="75"/></a></div>
+<p class="summary">Curabitur sapien tellus, porttitor vitae luctus id, dignissim et ligula. In ullamcorper, purus ut mattis feugiat, libero risus consectetur ipsum, non sagittis quam urna eu orci.</p><ul class="refer">
+<li><a href="http://www.quicinc.com/"><img src="images/interactive_icon.gif" alt="Interactive" border="0" height="9" width="9"> Interactive Feature: Tell Us the Best Places to Go in 2015</a></li>
+</ul>
+</div>
+
+</div>
+<div id="columnEE">
+<div class="story">
+<h6 class="kicker">Practical Traveler</h6>
+<h5><a href="http://www.quicinc.com/">Integer id est ut elit mollis vulputate.</a></h5>
+<p class="summary">Nam in odio magna. Integer eu odio ante, ac rutrum dolor. Cras in tortor at urna auctor ornare nec blandit arcu. Phasellus bibendum est sit amet sapien congue sit amet malesuada leo consectetur. Integer ipsum ligula, blandit vitae mollis non, viverra ac elit. Suspendisse ut lorem id leo congue fringilla vel ac ante. Praesent lectus tortor, mattis a tristique a, vehicula eget arcu.</p>
+</div>
+
+</div>
+
+</div>
+<div class="widgettabsContainer">
+<ul class="tabs">
+<li class="selected" style="border-left:1px solid #CCCCCC"><a href="http://www.quicinc.com/">Real Estate</a></li>
+<li class=""><a href="http://www.quicinc.com/">Boats</a></li>
+<li class=""><a href="http://www.quicinc.com/">Jobs</a></li>
+<li class=""><a href="http://www.quicinc.com/">All Classifieds</a></li>
+</ul>
+</div>
+<div class="tabContent">
+<div class="tabColumn1">
+<h5><a href="http://www.quicinc.com/">Proin tempus, et rossana nisi a iaculis laoreet, est libero iaculis orci, sed facilisis urna est non metus.</a></h5>
+<div class="runaroundRight"><a href="http://www.quicinc.com/"><img src="rimages/nemo.gif" alt="The Name Evokes Dawn for a Reason" width="50" height="50"/></a></div>
+<p class="summary">Pellentesque a nunc vel metus dapibus vulputate. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse accumsan vestibulum iaculis. | <span style="font-family: Arial, Helvetica, sans-serif; font-size: 92%;"><a href="http://www.quicinc.com/"><span class="icon slideshow">Slide Show</span></a></span></p>
+</div>
+<div class="tabColumn2">
+<h6 class="kicker">Find Properties</h6>
+<ul class="refer">
+<li><a href="http://www.quicinc.com/">Go to Real Estate Section</a></li>
+<li><a href="http://www.quicinc.com/">Search for Properties</a></li>
+<li><a href="http://www.quicinc.com/">Commercial Real Estate</a></li>
+<li><a href="http://www.quicinc.com/">Video Showcase: Real Estate</a></li>
+<li><a href="http://www.quicinc.com/">Post an Ad</a></li>
+</ul>
+</div>
+<div id="tabAD">
+<h5><a href="http://www.quicinc.com/" target="_blank">The Oceannaire</a></h5>
+<p class="summary"><a href="http://www.quicinc.com/" target="_blank">New Green Condos in Hawaii</a></p>
+</div>
+</div>
+
+</div>
+<div id="columnF">
+<div id="multiMedia">
+<iframe src='iframes/bcHomeIframe.html' title='Ocean Times Video - homepage player' name='nyt_video_player' id='nyt_video_player' width='337' height='393' frameborder='0' marginwidth='0' marginheight='0' scrolling='no'></iframe>
+
+</div>
+<div id="columnFA">
+<h5><a href="http://www.quicinc.com/">Praesent et diam quis ligula rhoncus egestas vel sit amet felis.</a></h5>
+<div class="runaroundRight"><a href="http://www.quicinc.com/"><img src="rimages/domnode.jpg" alt="A Perennial Looker Keeps Its Cool" width="75" height="75"/></a></div>
+<p class="summary">Nulla sed mauris ac ante consectetur ullamcorper vel eget nisl. Integer a lacus nec sapien malesuada laoreet a non eros.</p>
+<ul class="refer">
+<li><a href="http://www.quicinc.com/">Surf Report: Blogging Pipeline</a></li>
+<li><a href="http://www.quicinc.com/">Go to Complete Coverage &raquo;</a></li></ul>
+<h6><a href="http://www.quicinc.com/">News from AP</a> &amp; <a href="http://www.quicinc.com/">Reuters &raquo;</a></h6>
+<div class="story">
+<h6><a href="http://www.quicinc.com/">SUSPENDISSE SED ELEIFEND LOREM.</a></h6>
+<span class="timestamp">3 minutes ago</span>
+</div>
+<div class="story">
+<h6><a href="http://www.quicinc.com/">MORBI QUAM LEO, TEMPUS ET ELEIFEND NEC, PORTA NEC NISI.</a></h6>
+<span class="timestamp">6 minutes ago</span>
+</div>
+<div class="story">
+<h6><a href="http://www.quicinc.com/">DUIS EGET LACUS METUS, A MATTIS LIGULA.</a></h6>
+<span class="timestamp">9 minutes ago</span>
+</div>
+
+</div>
+</div>
+
+</div>
+<div id="columnG">
+<div id="insideOCTimes">
+<div id="insideOCTimesHeader">
+<div class="navigation"><span id="leftArrow"><img id="mothReverse" src="images/nav_backward_off.gif"/></span>&nbsp;<span id="rightArrow"><img id="mothForward" src="images/nav_forward_off.gif"/></span></div>
+<h4>Inside OCEAN TIMES</h4>
+</div>
+<div id="insideOCTimesScrollWrapper">
+<table id="insideOCTimesBrowser" cellspacing="0">
+<tbody>
+<tr>
+<td class="first">
+<div class="story">
+<h6 class="kicker">
+<a href="http://www.quicinc.com/">World &raquo;</a>
+</h6>
+<div class="mothImage">
+<a href="http://www.quicinc.com/"><img src="rimages/aquariumcanvas.jpg" width="151" height="151"/></a>
+</div>
+<h6 class="headline"><a href="http://www.quicinc.com/">Nullam magna eros, sagittis in sagittis eu, pellentesque vel mi.</a></h6>
+</div>
+</td>
+<td>
+<div class="story">
+<h6 class="kicker">
+<a href="http://www.quicinc.com/">Opinion &raquo;</a>
+</h6>
+<div class="mothImage">
+<a href="http://www.quicinc.com/"><img src="rimages/vellamogoddess.jpg" width="151" height="151"/></a>
+</div>
+<h6 class="headline"><a href="http://www.quicinc.com/">Morbi quam leo, tempus et eleifend nec, porta nec nisi.</a></h6>
+</div>
+</td>
+<td>
+<div class="story">
+<h6 class="kicker">
+<a href="http://www.quicinc.com/">Region &raquo;</a>
+</h6>
+<div class="mothImage">
+<a href="http://www.quicinc.com/"><img src="rimages/jellyfish.jpg" width="151" height="151"/></a>
+</div>
+<h6 class="headline"><a href="http://www.quicinc.com/">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></h6>
+</div>
+</td>
+<td>
+<div class="story">
+<h6 class="kicker">
+<a href="http://www.quicinc.com/">Science &raquo;</a>
+</h6>
+<div class="mothImage">
+<a href="http://www.quicinc.com/"><img src="rimages/reflo.jpg" width="151" height="151"/></a>
+</div>
+<h6 class="headline"><a href="http://www.quicinc.com/">Etiam luctus lorem arcu.</a></h6>
+</div>
+</td>
+<td>
+<div class="story">
+<h6 class="kicker"><a href="http://www.quicinc.com/">Opinion &raquo;</a></h6>
+<h3><a href="http://www.quicinc.com/">Aliquam facilisis auctor rhoncus</a></h3>
+<p class="summary">ed aliquam, nisi congue adipiscing vulputate, ligula felis fringilla velit, in aliquam velit nisi in dolor. Sed sit amet enim eu lorem bibendum consequat.</p>
+</div>
+</td>
+<td>
+<div class="story">
+<h6 class="kicker">
+<a href="http://www.quicinc.com/">ECOSYSTEMS &raquo;</a>
+</h6>
+<div class="mothImage">
+<a href="http://www.quicinc.com/"><img src="rimages/css3d.jpg" width="151" height="151"/></a>
+</div>
+<h6 class="headline"><a href="http://www.quicinc.com/">Nullam vehicula porta mauris quis tincidunt.</a></h6>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</div>
+<div id="columnH">
+<div class="subModuleItem">
+<a href="http://www.quicinc.com/">Subscribe today to The Ocean Times</a>
+</div>
+<div class="subModuleItem">
+<a href="http://www.quicinc.com/" target="_blank">Learn online<br/>
+With The Ocean Times<br/> Knowledge<br/>Network</a>
+</div>
+<div class="subModuleItem">
+<a href="http://www.quicinc.com/" target="_blank">Buy Ocean Times <br/>
+Gifts, Photos,<br/> Reprints, <br/>Collectibles <br/>and more!</a>
+</div>
+
+</div>
+<div id="columnI">
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">World &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Pellentesque a nunc vel metus dapibus vulputate.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Suspendisse accumsan vestibulum iaculis.</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">U.S. &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Nulla sed mauris ac ante consectetur ullamcorper vel eget nisl.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Integer a lacus nec sapien malesuada laoreet a non eros.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Quisque eleifend malesuada odio sit amet commodo.</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Politics &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Vivamus at massa quis nulla adipiscing euismod at ut elit.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Ut velit elit, semper eget gravida vulputate, lacinia et justo.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">In non eros sed ipsum imperdiet accumsan a sed velit. </a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Asia &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Nullam malesuada leo et ipsum eleifend posuere at quis risus.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Pellentesque varius lacinia elit, et pellentesque erat lacinia eu.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Quisque magna lectus, adipiscing id vehicula vitae, condimentum in arcu.</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Science &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Phasellus mattis aliquam tincidunt.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Integer mollis aliquet nulla eget varius</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Ut egestas adipiscing justo tempor luctus</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Health &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Praesent eu mi leo</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Quisque semper, felis eget aliquet pharetra, quam augue vestibulum diam, in facilisis dui nisi non mauris</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aliquam mi mauris, tempor quis tristique eu, dictum vitae turpis</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Education &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Duis eleifend hendrerit venenatis</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Etiam consequat, nibh in pharetra suscipit, arcu justo eleifend erat</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Donec quis enim libero</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Real Estate &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Duis tincidunt mollis leo, at semper nunc ornare vel</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Sed sit amet enim eu lorem bibendum consequat</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">In pulvinar rhoncus condimentum</a></h6></li>
+</ul>
+
+</div>
+<div id="columnJ">
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Business Day &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Nulla luctus molestie nisl ut pellentesque</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">In dapibus nisl non massa dignissim dapibus</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Cras at sapien at urna bibendum lacinia</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Technology &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Praesent tincidunt fringilla elit</a></h6></li>
+<li>
+<h6><a href="http://www.quicinc.com/">Sit amet condimentum lacus vulputate id</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Nunc fringilla, justo vel ornare vulputate, quam dui consectetur lectus, nec luctus tortor justo eu arcu.</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Sports &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Suspendisse iaculis, libero dictum mollis hendrerit, tortor urna imperdiet nulla, eu vestibulum quam augue vel lectus</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Sed rutrum justo fermentum mauris vulputate non pellentesque ipsum malesuada</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aliquam ac dui neque, ut sagittis orci</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Travel &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Aliquam at ante eu arcu lacinia aliquam eget et dui</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Vestibulum vitae orci sodales velit cursus sodales</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aliquam nec odio tortor, eget congue elit</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Europe &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Fusce magna ligula, sodales et vestibulum in, mattis at nunc</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Phasellus vitae mi non mi interdum scelerisque.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Sed ante eros, accumsan viverra vehicula non, mollis id mauris</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Caribbean &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Aenean at iaculis sapien</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aenean eros nibh, adipiscing eget semper ultricies, porttitor ac purus </a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Vivamus et egestas erat</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Middle EasT &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Nulla ultrices interdum pharetra</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Maecenas semper sem vitae magna facilisis vitae tempus nisi gravida</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Integer non lacus justo, nec feugiat neque</a></h6></li>
+</ul>
+
+</div>
+<div id="columnK">
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Opinion &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Fusce interdum tincidunt nulla, et semper mi molestie eu</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aenean dui velit, tempus non consequat in, rhoncus non tellus</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Etiam ultrices, massa sit amet porttitor rhoncus, nunc ligula consectetur arcu, ac venenatis erat velit in sem</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Enrico Ros &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Proin tincidunt aliquet vehicula</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Vestibulum eget ligula ut est bibendum porta a luctus nisi</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Quisque nec justo sit amet metus rhoncus ultrices sed quis mi</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Sharks &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Lorem ipsum dolor sit amet, consectetur adipiscing elit</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aliquam at ante eu arcu lacinia aliquam eget et dui</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Robert Nance &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li>
+<h6><a href="http://www.quicinc.com/">Netus et malesuada fames ac turpis egestas.</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Vestibulum vitae orci sodales velit cursus sodales</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aliquam nec odio tortor, eget congue elit</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Coast Guard &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Sed ante eros, accumsan viverra vehicula non, mollis id mauris</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Mauris hendrerit bibendum tristique</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aenean eros nibh, adipiscing eget semper ultricies, porttitor ac purus</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Books &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Praesent tortor sem, porttitor ut commodo non, eleifend ut nibh</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Sed sollicitudin sollicitudin accumsan</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Nulla ultrices interdum pharetra</a></h6></li>
+</ul>
+<h6 class="moduleHeaderLg"><a href="http://www.quicinc.com/">Fred Liu &raquo;</a></h6>
+<ul class="headlinesOnly">
+<li><h6><a href="http://www.quicinc.com/">Maecenas semper sem vitae magna facilisis vitae tempus nisi gravida</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Aenean dui velit, tempus non consequat in, rhoncus non tellus</a></h6></li>
+<li><h6><a href="http://www.quicinc.com/">Etiam ultrices, massa sit amet porttitor rhoncus, nunc ligula consectetur arcu, ac venenatis erat velit in sem</a></h6></li>
+</ul>
+
+</div>
+<div id="columnL">
+<div class="timeswireModule">
+<h4 class="sectionHeaderHome"><a href="http://www.quicinc.com/">Ocean Times Wire &raquo;</a></h4>
+<p class="refer">Most recent updates on OceanTimes <a href="http://www.quicinc.com/" title="Go to Times Wire">See More &raquo;</a></p>
+<ul id="wireContent" class="singleRule">
+<li class='wrap'><span class='wiretimestamp'>5:13 PM PT</span><a href='http://www.quicinc.com/'>Vivamus nec ligula at nibh ullamcorper suscipit eu a magna.</a></li>
+<li class='wrap'><span class='wiretimestamp'>5:07 PM PT</span><a href='http://www.quicinc.com/'>Maecenas quis felis ut felis varius vulputate eget in risus.</a></li>
+<li class='wrap last'><span class='wiretimestamp'>5:06 PM PT</span><a href='http://www.quicinc.com/'>Nunc lacinia metus id diam eleifend vitae facilisis diam mattis.</a></li>
+</ul>
+</div>
+<div class="singleRuleDivider"></div>
+<h4>MOST POPULAR</h4>
+<div class="widgettabsContainer">
+<ul class="tabs">
+<li class="selected" style="border-left:1px solid #CCCCCC"><a href="http://www.quicinc.com/">E-MAILED</a></li>
+<li class=""><a href="http://www.quicinc.com/">BLOGGED</a></li>
+<li class=""><a href="http://www.quicinc.com/">SEARCHED</a></li>
+<li class=""><a href="http://www.quicinc.com/">VIEWED</a></li>
+</ul>
+</div>
+<div class="tabContent">
+<ol class="tablist">
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Lorem ipsum dolor sit amet, consectetur adipiscing elit</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Vestibulum eget ligula ut est bibendum porta a luctus nisi</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Quisque nec justo sit amet metus rhoncus ultrices sed quis mi</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Etiam enim ligula, lobortis eleifend consectetur in, rutrum id turpis</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Vestibulum accumsan purus in neque tempus placerat</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Aliquam placerat dui vitae turpis faucibus gravida aliquet sapien cursus</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Sed sed metus et magna sagittis facilisis</a></li>
+<li kicker="Practical Traveler"><a href="http://www.quicinc.com/" title="Click to go to this article">Suspendisse venenatis, felis eu auctor posuere, dui massa malesuada nibh, quis ullamcorper lacus dolor at enim</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Mauris sem nisl, pulvinar et malesuada vitae, mattis vel massa</a></li>
+<li><a href="http://www.quicinc.com/" title="Click to go to this article">Vivamus urna nisl, aliquam a consectetur id, bibendum ut lorem</a></li>
+</ol>
+<a class="more" href="http://www.quicinc.com/">Go to Complete List &#x00bb;</a>
+<div class="customHeadlines">
+<h6 class="kicker">Customize Headlines</h6>
+<p class="caption">Create a personalized list of headlines based on your interests.<br/><a href="http://www.quicinc.com/">Login &#187;</a> or <a href="http://www.quicinc.com/">Register &#187;</a></p>
+</div>
+</div>
+<br/>
+<h4 class="blogHeader">RECENT BLOG POSTS</h4>
+<div class="widgettabsContainer">
+<ul class="tabs">
+<li class="selected" style="border-left:1px solid #CCCCCC"><a href="http://www.quicinc.com/">NEWS</a></li>
+</ul>
+</div>
+<div class="tabContent">
+<ul class="blogNews">
+<li>
+<span class="blogNewsKicker">The Neptune: </span><a href="http://www.quicinc.com/">Vivamus nec turpis lectus, id commodo ipsum.</a>
+<p class="date">July 23, 2016, 4:07 PM</p>
+</li>
+<li>
+<span class="blogNewsKicker">Dealchest: </span><a href="http://www.quicinc.com/">Proin pellentesque venenatis felis, sit amet pulvinar mauris ultricies ac</a>
+<p class="date">July 23, 2016, 3:58 PM</p>
+</li>
+<li>
+<span class="blogNewsKicker">ArtsBeat: </span><a href="http://www.quicinc.com/">Aenean a tortor sapien, eget fringilla ante</a>
+<p class="date">July 23, 2016, 3:57 PM</p>
+</li>
+<li>
+<span class="blogNewsKicker">OT Magazine: </span><a href="http://www.quicinc.com/">Donec quis nisi est!</a>
+<p class="date">July 23, 2016, 3:53 PM</p>
+</li>
+<li>
+<span class="blogNewsKicker">Media Decoder: </span><a href="http://www.quicinc.com/">Curabitur ultricies tempor felis quis accumsana</a>
+<p class="date">July 23, 2016, 3:45 PM</p>
+</li>
+<li>
+<span class="blogNewsKicker">Ocean Room: </span><a href="http://www.quicinc.com/">Fusce at nulla ac orci imperdiet ullamcorper</a>
+<p class="date">July 23, 2016, 3:42 PM</p>
+</li>
+</ul>
+<p class="refer"><a href="http://www.quicinc.com/">More Ocean Times Blogs &#187;</a></p>
+</div>
+<div class="singleAd">
+<p><a href="http://www.quicinc.com/" target="_blank">Get the full newspaper experience, and more, delivered to your device. Ocean Times Reader 2.0: Try it FREE for3 full weeks.</a></p>
+</div>
+<img src="rimages/squid.jpg" width="302" height="99" border="0">
+<table width="100%" height="" cellspacing="0" cellpadding="0" border="0" style="width: 100%; border: 1px solid rgb(157, 163, 173);">
+<tbody><tr>
+<td valign="top" style="font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: rgb(51, 51, 51);">
+<table width="100%" height="100%" cellspacing="0" cellpadding="0" border="0" style="width: 100%; height: 100%;">
+<tbody><tr>
+<td width="70%" height="20" bgcolor="#9da3ad" style="background-color: rgb(157, 163, 173); width: 70%; height: 20px; padding-top: 2px; padding-left: 11px; padding-bottom: 2px; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: rgb(51, 51, 51);"><span style="font-size: 12px; font-weight: normal; color: rgb(255, 255, 255);">Ads </span></td>
+<td width="30%" height="20" bgcolor="#9da3ad" align="right" style="padding-top: 2px; padding-bottom: 2px; width: 30%; height: 20px; background-color: rgb(157, 163, 173); font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: rgb(51, 51, 51);"><span><a target="popupad" href="http://www.quicinc.com/" style="font-family: Arial,Helvetica,sans-serif; color: white; font-size: 12px; padding-right: 7px;">what's this?</a></span></td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+<tr>
+<td valign="top" height="110" style="height: 110px; font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: rgb(51, 51, 51);"><table width="100%" height="100%" cellspacing="0" cellpadding="4" border="0" bgcolor="#f8f8f9" style="height: 100%; width: 100%; padding: 4px; background-color: rgb(248, 248, 249);">
+<tbody><tr>
+<td valign="middle" style="font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: rgb(51, 51, 51); background-color: rgb(248, 248, 249);">
+<div style="line-height: 14px; padding-left: 7px; padding-bottom: 5px;">
+<a style="font-size: 12px; color: rgb(0, 0, 102); font-weight: bold; text-decoration: underline;" target="_blank" href="http://www.quicinc.com/">CYH San Diego Boat Show</a><br/>
+New CYH Boats &amp; Accessories are Revealed at the 2014 Boat Show!<br/>
+<a style="font-size: 10px; color: rgb(0, 0, 102); font-weight: normal; text-decoration: none;" target="_blank" href="http://www.quicinc.com/">CYH-Boats.com/2015</a>
+</div>
+</td>
+</tr>
+<tr>
+<td valign="middle" style="font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: rgb(51, 51, 51); background-color: rgb(248, 248, 249);">
+<div style="line-height: 14px; padding-left: 7px; padding-bottom: 5px;">
+<a style="font-size: 12px; color: rgb(0, 0, 102); font-weight: bold; text-decoration: underline;" target="_blank" href="http://www.quicinc.com/"> Surf Lessons</a><br/>
+Find an accredited surf instructors near you!<br/>
+<a style="font-size: 10px; color: rgb(0, 0, 102); font-weight: normal; text-decoration: none;" target="_blank" href="http://www.quicinc.com/">www.surfnow.com</a>
+</div>
+</td>
+</tr>
+<tr>
+<td valign="middle" style="font-family: Arial,Helvetica,sans-serif; font-size: 12px; color: rgb(51, 51, 51); background-color: rgb(248, 248, 249);">
+<div style="line-height: 14px; padding-left: 7px; padding-bottom: 5px;">
+<a style="font-size: 12px; color: rgb(0, 0, 102); font-weight: bold; text-decoration: underline;" target="_blank" href="http://www.quicinc.com/"> Serenity Charters</a><br/>
+Join Captain Mal and crew aboard the Serenity
+<br/>
+<a style="font-size: 10px; color: rgb(0, 0, 102); font-weight: normal; text-decoration: none;" target="_blank" href="http://www.quicinc.com/">www.serenityCharters.com</a>
+</div>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+<br/>
+
+</div>
+<br clear="all"/>
+
+</div>
+<div id="footer">
+<ul class="first">
+<li class="first"><a href="http://www.quicinc.com/">Home</a></li>
+<li><a href="http://www.quicinc.com/">World</a></li>
+<li><a href="http://www.quicinc.com/">U.S.</a></li>
+<li><a href="http://www.quicinc.com/">Politics</a></li>
+<li><a href="http://www.quicinc.com/">Business</a></li>
+<li><a href="http://www.quicinc.com/">Technology</a></li>
+<li><a href="http://www.quicinc.com/">Science</a></li>
+<li><a href="http://www.quicinc.com/">Health</a></li>
+<li><a href="http://www.quicinc.com/">Sports</a></li>
+<li><a href="http://www.quicinc.com/">Opinion</a></li>
+<li><a href="http://www.quicinc.com/">Arts</a></li>
+<li><a href="http://www.quicinc.com/">Style</a></li>
+<li><a href="http://www.quicinc.com/">Travel</a></li>
+<li><a href="http://www.quicinc.com/">Jobs</a></li>
+<li><a href="http://www.quicinc.com/">Real Estate</a></li>
+<li><a href="http://www.quicinc.com/">Boats</a></li>
+<li><a href="#top">Back to Top</a></li>
+</ul>
+<ul>
+<li class="first"><a href="http://www.quicinc.com/">&copy; 2015</a><a href="http://www.quicinc.com/">The Ocean Times Company</a></li>
+<li><a href="http://www.quicinc.com/">Privacy</a></li>
+<li><a href="http://www.quicinc.com/">Your Ad Choices</a></li>
+<li><a href="http://www.quicinc.com/">Terms of Service</a></li>
+<li><a href="http://www.quicinc.com/">Corrections</a></li>
+<li><a href="http://www.quicinc.com/">RSS</a></li>
+<li><a href="http://www.quicinc.com/">First Look</a></li>
+<li><a href="http://www.quicinc.com/">Help</a></li>
+<li><a href="http://www.quicinc.com/">Contact Us</a></li>
+<li><a href="http://www.quicinc.com/">Work for Us</a></li>
+<li><a href="http://www.quicinc.com/">Advertise</a></li>
+<li><a href="http://www.quicinc.com/">Site Map</a></li>
+</ul>
+</div>
+
+</div>
+
+</body>
+</html>

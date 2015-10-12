@@ -5,7 +5,7 @@ import re
 import loghelper
 import adbhelper
 import shutil
-
+from adb import adb
 from adbhelper import getProp
 logcatcmdpattern = "adb logcat -d -v threadtime > %s.log"
 dmesgcmdpattern = "adb shell dmesg > %s.dmesg"
@@ -14,6 +14,13 @@ cpucmdpattern = "adb shell dumpsys cpuinfo > %s.ci"
 
 last_start = 0
 last_end = 0
+
+def enable_debug(flag):
+    if flag == 0:
+        adb.cmd("shell echo 0 > /sys/power/pm_print_times")
+    else:
+        adb.cmd("shell echo 1 > /sys/power/pm_print_times")
+
 
 def main():
     if len(sys.argv) == 3:
@@ -41,6 +48,8 @@ def main():
 
     lastkernelTime = 0
     cmd = raw_input("Enter any key to start.")
+    if sys.argv[1] == "1":
+        adb.cmd("shell \"echo -n 'file leds-pmic.c +p' > /d/dynamic_debug/control\"")
     while cmd != "f":
         index += 1
         outputpreffix = "%s_%d-%s" % (mainKey, index, releaseInfo)
@@ -52,23 +61,34 @@ def main():
 
         os.system(logcatcmd)
         os.system(dmesgcmd)
-        os.system(cpucmd)
-        os.system(memcmd)
+#        os.system(cpucmd)
+#        os.system(memcmd)
 
         outputpreffix = re.sub("\\\\", "", outputpreffix)
         logoutput = "%s.log" % outputpreffix
         dmesgoutput = "%s.dmesg" % outputpreffix
 
-        fwWakeupTime = getFwWakeupTime(logoutput)
-        kernelWakeupTime = getKernelWakeupTime(dmesgoutput)
-        wakeupTime = kernelWakeupTime + fwWakeupTime
+        if (sys.argv[1] == "1"):
+            wakeup_time = get_wakup_time_from_dmesg(dmesgoutput)
+            kernel_time = getKernelWakeupTime(dmesgoutput)
+            console_log =  "wakeup_time: %d(%d)" % (wakeup_time, kernel_time)
+            print console_log
+            outfd.write(console_log)
+            outfd.write("\n")
+            if wakeup_time != 0:
+                resList.append(wakeup_time)
+        else:
+            fwWakeupTime = getFwWakeupTime(logoutput)
+            kernelWakeupTime = getKernelWakeupTime(dmesgoutput)
+            wakeupTime = kernelWakeupTime + fwWakeupTime
 
-        outContent = "%d + %d = %d" % (kernelWakeupTime, fwWakeupTime, wakeupTime)
-        print outContent
-        outfd.write(outContent)
-        outfd.write("\n")
-        if fwWakeupTime > 0 and kernelWakeupTime > 0 and kernelWakeupTime < 1000:
-            resList.append(wakeupTime)
+            outContent = "%d + %d = %d" % (kernelWakeupTime, fwWakeupTime, wakeupTime)
+            print outContent
+            outfd.write(outContent)
+            outfd.write("\n")
+            
+            if fwWakeupTime > 0 and kernelWakeupTime > 0 and kernelWakeupTime < 1000:
+                resList.append(wakeupTime)
         cmd = raw_input("Press any key to continue or f to stop.")
 
     average = sum(resList)/len(resList)
@@ -77,6 +97,7 @@ def main():
     outfd.write(outContent)
     outfd.close()
     os.chdir(pwd)
+    enable_debug(0)
 
 def getFwWakeupTime(logoutput):
     startpoint = 0
@@ -118,6 +139,23 @@ def getKernelWakeupTime(dmesgoutput):
     kernelWakeupTime = endpoint - startpoint
     return kernelWakeupTime
 
+
+def get_wakup_time_from_dmesg(dmesgoutput):
+    start, end = 0, 0
+    fd = open(dmesgoutput, "r")
+    dmesg_list = fd.readlines()
+    fd.close()
+    for log in dmesg_list:
+        if "Enabling non-boot CPUs" in log or "Suspended for" in log:
+            start = loghelper.parse2Element(log, "dmesg").ts
+    for log in dmesg_list:
+        if "pmic_led_on" in log:
+            end = loghelper.parse2Element(log, "dmesg").ts
+            if end > start:
+                break
+
+    wakup_time = end - start
+    return wakup_time
 
 if __name__ == "__main__":
     main()

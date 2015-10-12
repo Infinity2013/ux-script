@@ -11,7 +11,9 @@ p.add_argument('--systrace', default='', dest='systrace', nargs='+', help='systr
 a = p.parse_known_args(sys.argv)
 
 args = {}
+#args["layer"] = "com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity"
 args["layer"] = "com.google.android.apps.plus/com.google.android.apps.photos.phone.PhotosHomeActivity"
+#args["packageName"] = "com.google.android.apps.photos"
 args["packageName"] = "com.google.android.apps.plus"
 args["outName"] = "%s-%s_%s.launch" % ("Photos", ic.board(), ic.release())
 args["uiobject_name"] = "Photos"

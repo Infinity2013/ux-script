@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+Qualcomm Technologies Proprietary and Confidential.
+-->
+<html>
+<head>
+<title>Vellamo Kruptein Benchmark</title>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<link rel="stylesheet" href="../common/per_benchmark.css"/>
+<script src="../common/per_benchmark.js"></script>
+<script src="crypto-libs/crypto-js/build/rollups/aes.js"></script>
+<script src="crypto-libs/crypto-js/build/components/mode-cfb-min.js"></script>
+<script src="crypto-libs/crypto-js/build/components/mode-ecb.js"></script>
+<script src="crypto-libs/crypto-js/build/components/pad-ansix923-min.js"></script>
+<script src="crypto-libs/crypto-js/build/components/pad-nopadding.js"></script>
+<script src="crypto-libs/crypto-js/build/rollups/sha256.js"></script>
+<script src="core.js"></script>
+<script type="text/javascript">
+var fps = 60;
+var loop;
+var canvas_side = 512;
+var LINES_PER_BLOCK = 8;
+var BLOCK_SIZE = canvas_side*LINES_PER_BLOCK*4; // line_size * 4 lines * 4 (bytes_per_pixel) = 4 lines in bytes
+var IMAGE_DATA_SIZE = canvas_side*canvas_side*4; // coin image size, in bytes
+var imageData;
+var totalAESEncryptTime = 0;
+var totalAESDecryptTime = 0;
+var totalAESDecryptConvertTime = 0;
+var totalSHA2HashTime = 0;
+var skip = false;
+
+function arrayToString(imageDataIndex, blockSize) {
+  'use strict';
+  blockSize = typeof blockSize !== 'undefined' ? blockSize : BLOCK_SIZE;
+  var s = "";
+  for (var i = imageDataIndex; i < imageDataIndex + blockSize ; i++) {
+    s = s + String.fromCharCode(imageData[i]);
+  };
+  return s;
+}
+
+function coin_init() {
+  'use strict';
+
+  var canvas = document.getElementById("theCanvas");
+  var ctx = canvas.getContext("2d");
+  var cryptoJSUtil;
+  var label;
+  var img;
+  var bgImage;
+  var encrypt_loop;
+  var decrypt_loop;
+
+  var mappedPixel;
+  var imageDataIndex = 0;
+  var imageStringCache = [];
+  var start = 0;
+  var end = 0;
+  var imgArrayEncryptedObjects = [];
+
+  var DECODE_REPS = 1;
+
+  function encrypt() {
+    if(imageDataIndex >= IMAGE_DATA_SIZE) {
+      clearInterval(encrypt_loop);
+      label.innerHTML = "Encrypt: " + totalAESEncryptTime;
+      imageDataIndex = 0;
+      imageStringCache = null;
+      setTimeout(updateCanvasDecrypt, 50);
+    } else {
+      var imgArrayString = imageStringCache[imageDataIndex];
+
+      // timed Encryption
+      start = Date.now();
+      imgArrayEncryptedObjects[imageDataIndex] = cryptoJSUtil.encryptAES(imgArrayString);
+      totalAESEncryptTime += Date.now() - start;
+
+      // replace bits in imageData for the current block
+      for (var i = imageDataIndex; i < imageDataIndex + BLOCK_SIZE ; i++) {
+        if((i+1)%4 != 0) // Don't modify alpha
+          imageData[i] = 255 - imageData[i] + (i%200)*Math.random(100)*(i%2);
+      }
+      imageDataIndex += BLOCK_SIZE;
+    }
+  }
+
+  function decrypt() {
+    if(imageDataIndex >= IMAGE_DATA_SIZE) {
+
+      clearInterval(decrypt_loop);
+      label.innerHTML = "Decrypt: " + totalAESDecryptTime;
+      draw();
+      setTimeout(updateCanvasSHA2, 50);
+
+    } else {
+
+      // timed decrypt loop
+      start = Date.now();
+      for (var rep = 0; rep < DECODE_REPS; rep++)
+        var decString = cryptoJSUtil.decryptAES(imgArrayEncryptedObjects[imageDataIndex]);
+      totalAESDecryptTime += Date.now() - start;
+
+      // timed stringify loop
+      start = Date.now();
+      for (var rep = 0; rep < DECODE_REPS; rep++)
+        var string = decString.toString(CryptoJS.enc.Utf8);
+      totalAESDecryptConvertTime += Date.now() - start;
+
+      // timed conversion of the result to pixel array
+      for (var i = imageDataIndex, j=0 ; i < imageDataIndex + BLOCK_SIZE, j< BLOCK_SIZE; i++, j++) {
+          imageData[i] = string.charCodeAt(j);
+      }
+
+      imageDataIndex += BLOCK_SIZE;
+    }
+  }
+
+
+  function updateCanvasSHA2(imageData) {
+    console.log("SHA2 start");
+    var s = arrayToString(0, IMAGE_DATA_SIZE);
+    start = Number(new Date());
+    var hash = cryptoJSUtil.SHA256(s);
+    totalSHA2HashTime = Number(new Date()) - start;
+    label.innerHTML = "SHA2: " + totalSHA2HashTime;
+      draw();
+    reportResults();
+  }
+
+  function reportResults() {
+    VellamoBenchmark.endWithResultsJSON(
+      {
+        cryptoJSAESEncryptTime: totalAESEncryptTime,
+        cryptoJSAESDecryptTime: totalAESDecryptTime,
+        cryptoJSSHA2HashTime: totalSHA2HashTime
+      }
+    );
+  }
+
+  function draw() {
+    if(skip == true) {
+      drawGround();
+    } else {
+      skip = true;
+    }
+  }
+
+  function drawGround() {
+    ctx.putImageData(mappedPixel,0,0);
+  }
+
+
+  function calculateReps() {
+    label.innerHTML = "Calibration...";
+
+    // assumption: full decription on Core-i7
+
+    //ENCODE_REPS = 1;
+    DECODE_REPS = 4;
+
+    // precalc the strings to be encrypted
+    for (var i = 0; i < IMAGE_DATA_SIZE; i += BLOCK_SIZE)
+        imageStringCache[i] = arrayToString(i, BLOCK_SIZE);
+
+    scheduleNextStage(updateCanvasEncrypt);
+  }
+
+  function updateCanvasEncrypt() {
+    label.innerHTML = "Encrypting...";
+    encrypt_loop = setInterval(function() {
+      draw();
+      encrypt();
+    }, 1000/fps);
+  }
+
+  function updateCanvasDecrypt() {
+    decrypt_loop = setInterval(function() {
+      draw();
+      decrypt();
+    }, 1000/fps);
+  }
+
+  function init() {
+    label = document.getElementById("label");
+    img = new Image();
+    cryptoJSUtil = CryptoJSUtil;
+    img.onload = function() {
+      ctx.drawImage(img,0,0);
+      mappedPixel = ctx.getImageData(0, 0, canvas_side, canvas_side);
+      imageData = mappedPixel.data;
+      scheduleNextStage(calculateReps);
+    };
+    img.src = "images/coin.png";
+  }
+
+  function scheduleNextStage(f) {
+    setTimeout(f, 50);
+  }
+
+  init();
+}
+</script>
+<style type="text/css">
+  body {
+    background: url('images/background.jpg');
+    background-size: 100% 100%;
+  }
+
+  #theCanvas {
+    position: absolute;
+    left: 50%;
+    top: 42%;
+    margin-top: -35%;
+    margin-left: -35%;
+    width: 70%;
+    height: 70%;
+  }
+</style>
+</head>
+<body onload="VellamoBenchmark.loadOnShellReady(coin_init)">
+<div id="label" class="test_info">&nbsp;</div>
+<canvas id="theCanvas" width="512" height="512">You don't support HTML5 canvas.</canvas>
+</body>
+</html>

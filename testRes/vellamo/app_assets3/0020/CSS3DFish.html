@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+Qualcomm Technologies Proprietary and Confidential.
+-->
+<html>
+<head>
+<title>CSS 3D Animation Test</title>
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<link rel="stylesheet" href="../common/per_benchmark.css"/>
+<script src="../common/per_benchmark.js"></script>
+<script src="../common/framecounter.js"></script>
+<script src="../common/animationutils.js"></script>
+<link type="text/css" rel='stylesheet' href="css/fish.styles.css"/>
+<script type="text/javascript">
+var stage;
+var num_fish = 0;
+var useWidth, useHeight;
+var frameCounter = new FrameCounter(60*2);
+var requestId;
+var running = false;
+var timedOut = false;
+var styleFailLevel;
+var timeoutHandle;
+var fish_count;
+var fps;
+var smoothness;
+var TIMEOUT = 20 * 1000;
+var STARTING_FISH_COUNT = 15;
+var NUM_FISH_TO_ADD = 15;
+var MAX_FISH = 60;
+var EXPECTED_DATA_POINTS = 3;
+
+
+function isAndroidBrowser() {
+  var nua = navigator.userAgent;
+  var is_android = ((nua.indexOf('Mozilla/5.0') > -1 && nua.indexOf('Android ') > -1 && nua.indexOf('AppleWebKit') > -1) && !(nua.indexOf('Chrome') > -1));
+  //console.log('android detected ' + is_android);
+  return is_android;
+}
+
+function generateRandomNumberInRange(low, high) {
+  return Math.floor(Math.random() * (high-low)) + low;
+}
+
+function generateRandomNumberInRangeTriang(low, high) {
+  return Math.floor(((Math.random() + Math.random()) / 2) * (high-low)) + low;
+}
+
+var FishXY = {
+  minTop : 0,
+  maxTop : 0,
+  minLeft : 0,
+  maxLeft : 0,
+
+  compute : function (width, height) {
+    this.minTop = 2   * height / 6;
+    this.maxTop = 4.5 * height / 6;
+    this.minLeft = width * 5.5 / 12;
+    this.maxLeft = width * 6.5 / 12;
+  },
+
+  generateStyle : function (style) {
+    style.top = generateRandomNumberInRange(FishXY.minTop, FishXY.maxTop) + 'px';
+    style.left = generateRandomNumberInRangeTriang(FishXY.minLeft, FishXY.maxLeft) + 'px';
+  }
+}
+
+function createFlyingFish(num) {
+  'use strict';
+  var div, left, fish, wing;
+  var id;
+  for (var i = 0; i < num; i += 1) {
+    // Create parent div
+    div = document.createElement("div");
+    id = num_fish + i;
+    div.id = id + '';
+    div.className = "v-div fish-body hidden";
+    FishXY.generateStyle(div.style);
+
+    // Create right wing
+    wing = document.createElement("div");
+    wing.className = "right-wing";
+    div.appendChild(wing);
+
+    // Create left wing
+    wing = document.createElement("div");
+    wing.className = "left-wing";
+    div.appendChild(wing);
+
+    // add the animation class to the body (and remove the
+    var suffix = (i % 7) * 100;
+    div.className += " fly_"+suffix;
+
+    stage.appendChild(div);
+  }
+  num_fish += i;
+  //console.log('Added ' + i + ' fish, ' + num_fish + ' flying');
+  evaluateStyleSupport();
+}
+
+function removeFlyingFish(num) {
+  var id;
+  var e;
+  var removedCount = 0;
+  if (num > num_fish) {
+    num = num_fish;
+  }
+  for (var i = 0; i < num; i++) {
+    id = num_fish - i - 1;
+    e = document.getElementById(id.toString());
+    if (e) {
+      stage.removeChild(e)
+      removedCount++;
+    }
+  }
+  if (removedCount != num) {
+    console.warn('CSS3D issue: expected fish removed ' + num + ', actual ' + removedCount);
+  }
+  num_fish -= removedCount;
+  //console.log('Removed ' + i + ' fish, ' + num_fish + ' remaining');
+}
+
+function evaluateStyleSupport() {
+  'use strict';
+  var div = document.getElementById("0");
+  if (!div)
+    return;
+  var divStyle = window.getComputedStyle(div, null);
+  if (!divStyle)
+    return;
+
+  //console.log("-webkit-transform="+divStyle.getPropertyValue("-webkit-transform"));
+  //console.log("-moz-transform="+divStyle.getPropertyValue("-moz-transform"));
+  //console.log("-ms-transform="+divStyle.getPropertyValue("-ms-transform"));
+  //console.log("-o-transform="+divStyle.getPropertyValue("-o-transform"));
+  //console.log("transform="+divStyle.getPropertyValue("transform"));
+  if (!divStyle.getPropertyValue("-webkit-transform") &&
+      (!divStyle.getPropertyValue("-moz-transform") || ("none"==new String(divStyle.getPropertyValue("-moz-transform")))) &&
+      (!divStyle.getPropertyValue("-ms-transform") || ("none"==new String(divStyle.getPropertyValue("-ms-transform")))) &&
+      (!divStyle.getPropertyValue("-o-transform") || ("none"==new String(divStyle.getPropertyValue("-o-transform")))) &&
+      (!divStyle.getPropertyValue("transform") || ("none"==new String(divStyle.getPropertyValue("transform"))))) {
+    styleFailLevel += 1;
+    console.log('CSS3D style failure: '+styleFailLevel);
+  }
+}
+
+var flip;
+function modifyOneElement() {
+  var e;
+  var id = 0;
+  do {
+    e = document.getElementById(id.toString());
+  } while (id < num_fish && !e)
+  if (e) {
+    if (flip)
+      e.style.zIndex = 'auto';
+    else
+      e.style.zIndex = 1;
+    flip = !flip;
+    //console.log(id + ' flip ' + flip);
+  }
+}
+
+function progressAnimation() {
+  'use strict';
+  var div, collection, count, i, element;
+  if (running) {
+    frameCounter.tick();
+    // Modify one element forces the synchronization of RAF callbacks with the CSS animation
+    modifyOneElement();
+    if (frameCounter.isStable()) {
+      //console.log('num_fish ' + num_fish + ', fps ' + frameCounter.getAverageFps()
+      //    + ', smoothness ' + frameCounter.getSmoothnessMse());
+      fish_count.push(num_fish);
+      fps.push(frameCounter.getAverageFps());
+      smoothness.push(frameCounter.getSmoothnessMse());
+        if (timedOut || num_fish >= MAX_FISH) {
+        finishAnimation();
+        return;
+      }
+      // add more fish ...
+      createFlyingFish(NUM_FISH_TO_ADD);
+      // ... in a Power-Of-Two fashion!
+      NUM_FISH_TO_ADD += NUM_FISH_TO_ADD;
+      frameCounter.clear();
+    }
+    requestId = AnimationUtils.requestAnimFrame(progressAnimation);
+  }
+}
+
+function finishAnimation() {
+  clearTimeout(timeoutHandle);
+  if (timedOut)
+    VellamoBenchmark.endWithError('Test timed out before completion', 1);
+  else if (fps.length != EXPECTED_DATA_POINTS)
+    VellamoBenchmark.endWithError('Invalid fps length', 2);
+  else if (smoothness.length != EXPECTED_DATA_POINTS)
+    VellamoBenchmark.endWithError('Invalid smoothness length', 3);
+  else if (fish_count.length != EXPECTED_DATA_POINTS)
+    VellamoBenchmark.endWithError('Invalid fish_count length', 4);
+  else {
+    VellamoBenchmark.endWithResultsJSON({
+      fish_count1: fish_count[0],
+      fps1       : fps[0],
+      smoothness1: smoothness[0],
+      fish_count2: fish_count[1],
+      fps2       : fps[1],
+      smoothness2: smoothness[1],
+      fish_count3: fish_count[2],
+      fps3       : fps[2],
+      smoothness3: smoothness[2],
+      css_failure: styleFailLevel,
+      });
+  }
+  running = false;
+}
+
+function init() {
+  'use strict';
+  stage = document.getElementById("stage");
+
+  // CSS style workarounds for the android browser
+  if (isAndroidBrowser()) {
+    var body = document.getElementsByTagName('body')[0];
+    if (body) {
+      // This causes background image corruption on android
+      body.classList.remove('background_100percent');
+    }
+  }
+  useWidth = document.width;
+  if (isNaN(useWidth) || useWidth < 50) { useWidth = window.innerWidth; }
+  useHeight = document.height;
+  if (isNaN(useHeight) || useHeight < 50) { useHeight = window.innerHeight; }
+  if (isNaN(useWidth) || isNaN(useHeight) || useWidth < 50 || useHeight < 50) {
+//    console.log("init, useWidth="+useWidth+", useHeight="+useHeight);
+    setTimeout(init, 100);
+  } else {
+    fish_count = [];
+    fps = [];
+    smoothness = [];
+    running = true;
+    flip = true;
+    styleFailLevel = 0;
+    FishXY.compute(useWidth, useHeight);
+
+    createFlyingFish(STARTING_FISH_COUNT);
+    timeoutHandle = setTimeout(function() { timedOut = true }, TIMEOUT);
+    frameCounter.clear();
+    requestId = AnimationUtils.requestAnimFrame(progressAnimation);
+  }
+}
+</script>
+</head>
+<body id="body" onload="VellamoBenchmark.loadOnShellReady(init)" class="background_100percent">
+<div id="stage">
+<img id="vellamo_img" src="img/foreground.png"></img>
+</div>
+</body>
+</html>

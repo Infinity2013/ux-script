@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+Qualcomm Technologies Proprietary and Confidential.
+-->
+<html>
+<head>
+<title>Vellamo See The Sun Benchmark</title>
+
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<link rel="stylesheet" href="../common/per_benchmark.css"/>
+<script src="../common/per_benchmark.js"></script>
+<script src="../common/framecounter.js"></script>
+<script src="../common/animationutils.js"></script>
+<script src="Math.js"></script>
+<script type="text/javascript">
+var startTime;
+
+var canvasWidth;
+var canvasHeight;
+var c2d;
+
+var eyeZFunction;
+var eyeTheta;
+var centerVector;
+var upVector;
+
+var dPR;
+var bSR;
+var USE_DPI_SCALING = false;
+var DPI_SCALE_CONTEXT = true;
+
+var cameraFrame;
+var iData;
+var requestId;
+var frameCounter = new FrameCounter(60);
+
+var Texel = function (x, y, z, text, color) {
+    this.initialize(x, y, z, text, color);
+};
+Texel.prototype = {
+  pos: null, text: null, color: null,
+  tPos: null, tU: null, tV: null,
+  hide: null,
+
+  initialize: function(x, y, z, text, color){
+    this.pos = new Vector3D(x, y, z);
+    this.text = text;
+    this.color = color;
+  }
+}
+
+function canvassurfer_init() {
+  // take references to the canvas
+  var canvasElement = document.getElementById("theCanvas");
+  canvasWidth = canvasElement.width;
+  canvasHeight = canvasElement.height;
+  c2d = canvasElement.getContext("2d");
+  if (USE_DPI_SCALING) {
+    // Modify for High DPI
+    dPR = AnimationUtils.getDevicePixelRatio();
+    bSR = AnimationUtils.getBackingStoreRatio(c2d);
+    var ratio = dPR / bSR;
+    canvasElement.width = canvasWidth * ratio;
+    canvasElement.height = canvasHeight * ratio;
+    canvasElement.style.width = canvasWidth + 'px';
+    canvasElement.style.height = canvasHeight + 'px';
+    if (DPI_SCALE_CONTEXT)
+      c2d.scale(ratio, ratio);
+  }
+
+  // init view vectors
+  eyeZFunction = 0;
+  eyeTheta = 0;
+  centerVector = new Vector3D(0, 0, 0);
+  upVector = new Vector3D(0, 0, 1);
+  texelArray = new Array();
+
+  // init the text
+  var textArray = ['W', 'E', 'B', 'T', 'E', 'C', 'H', '#'];
+  var colorArray = ['#fff', '#eee', '#ddd', '#fff', '#eef', '#dde', '#ccd', '#000'];
+  var index = 0;
+  var columns = 48*2;
+  var rows = 48*2;
+  for (var y = 0; y < rows; y++) {
+    for (var x = 0; x < columns; x++) {
+      // get the current letter and color
+      var letter = textArray[index];
+      var color = colorArray[index];
+      index++;
+      if (index >= textArray.length)
+        index = 0;
+      // place it
+      var sU = (1 + 2 * x) / (2 * columns);
+      var sV = (1 + 2 * y) / (2 * rows);
+      var lX = canvasWidth * sU - canvasWidth / 2;
+      var lZ = canvasHeight * sV - canvasHeight / 2;
+      var texel = new Texel(lX, 0, lZ, letter, color);
+      texel.tU = sU;
+      texel.tV = sV;
+      texelArray.push(texel);
+    }
+  }
+
+  // init the source
+  cameraFrame = new Image();
+  cameraFrame.src = "dude.png";
+  cameraFrame.onload = function() {
+    // get the ImageData associated wiht the image
+    var icElement = document.createElement("canvas");
+    icElement.width = cameraFrame.width;
+    icElement.height = cameraFrame.height;
+    var ic2d = icElement.getContext("2d");
+    ic2d.drawImage(cameraFrame, 0, 0);
+    cameraFrame.iData = ic2d.getImageData(0, 0, cameraFrame.width, cameraFrame.height);
+
+    displace();
+    frameCounter.clear();
+    requestId = AnimationUtils.requestAnimFrame(animate);
+  }
+}
+
+function displace() {
+  // get brightness as images's luma and color
+  var data = cameraFrame.iData;
+  for (var i in texelArray) {
+    var texel = texelArray[i];
+    var index = (parseInt(texel.tU * data.width) + (parseInt(texel.tV * data.height) * data.width)) * 4;
+    var colorBri = (data.data[index+0] * 0.35) + (data.data[index+1] * 0.50) + (data.data[index+2] * 0.15);
+    var alphaBri = data.data[index+3];
+    texel.pos.y = 50 - alphaBri;
+    texel.hide = (alphaBri === 0 || colorBri < 10);
+    //texel.r = data.data[index+0];
+    //texel.g = data.data[index+1];
+    //texel.b = data.data[index+2];
+    texel.color = "rgb(" + data.data[index+0] + "," + data.data[index+1] + "," + data.data[index+2] + ")";
+  }
+}
+
+var MotionController = {
+  distance: 600,
+  yOffset: -60,
+  update: function(elapsedS)  {
+      // Increase viewing distance over time
+      // This makes the surfer appear smaller over time
+      this.distance += elapsedS * 30;
+      // Move the surfer's y position down over time
+      this.yOffset += elapsedS * 12;
+  },
+}
+
+function animate() {
+  frameCounter.tick();
+  // find out the elapsed time since the last call
+  var elapsedS = frameCounter.getLastTimeDelta() / 1000;
+  // animate and re-render
+  updateAnimation(elapsedS);
+  render();
+  requestId = AnimationUtils.requestAnimFrame(animate);
+}
+
+function updateAnimation(elapsedS) {
+  eyeZFunction += elapsedS / 10;
+  // spin 2x faster when disposing
+  if (Controller !== null && Controller.disposing === true)
+    eyeTheta -= elapsedS / 4;
+  else
+    eyeTheta -= elapsedS / 2;
+
+  if (Controller !== null && Controller.stage < 2)
+    MotionController.update(elapsedS);
+}
+
+function render() {
+  if (true) {
+    c2d.clearRect(0, 0, canvasWidth, canvasHeight);
+  } else {
+    c2d.fillStyle = "rgba(128, 128, 128, 0.8)";
+    c2d.fillRect(0, 0, canvasWidth, canvasHeight);
+  }
+
+  // setup the matrices
+  var eyeX = MotionController.distance * Math.sin(eyeTheta * 2);
+  var eyeY = -1 * MotionController.distance * Math.cos(eyeTheta * 2);
+  var eyeZ = 50 + 100 * Math.sin(eyeZFunction);
+  var eyeVector = new Vector3D(eyeX, eyeY, eyeZ);
+  var viewMatrix = new Matrix3D;
+  viewMatrix.lookAt(eyeVector, centerVector, upVector);
+
+  // transform texels
+  var cw_2 = canvasWidth / 2.0;
+  var ch_2 = canvasHeight / 2.0;
+  var renderArray = new Array();
+  for (var i in texelArray) {
+    var texel = texelArray[i];
+    var tPos = texel.pos.clone();
+      //var mag = 4;
+      //tPos.add3f(Math.random() * 2 * mag - mag, Math.random() * 2 * mag - mag, Math.random() * 2 * mag - mag);
+    viewMatrix.transform(tPos);
+    var scale = 520 / tPos.z;
+    tPos.scale = scale - 0.5/2;
+    tPos.px = cw_2 + tPos.x * scale;
+    // Move the Y position down over time
+    tPos.py = ch_2 + tPos.y * scale + MotionController.yOffset;
+    texel.tPos = tPos;
+    renderArray.push(texel);
+  }
+
+  // this uses the [Vellamo]Controller
+  var testStage = Controller == null ? 2 : Controller.stage;
+  var useCircles = testStage > 1;
+  var useColors = testStage > 0;
+  var useAlpha = testStage > 2;
+  if (useColors == false) {
+    c2d.fillStyle = "#ff4800";
+    if (Controller !== null && Controller.disposing === true)
+      c2d.fillStyle = "#888";
+  }
+  if (useAlpha == false)
+    c2d.globalAlpha = 1;
+  // draw
+  var texelSizeMul = 0.4;
+  renderArray.sort(function(a,b){return b.tPos.z - a.tPos.z;});
+  for (var i in renderArray) {
+    var texel = renderArray[i];
+    if (true && texel.hide)
+      continue;
+
+    if (useColors)
+      c2d.fillStyle = texel.color;
+
+    var p = texel.tPos;
+
+    if (useAlpha == true) {
+      c2d.globalAlpha = p.scale / 2;
+      //var mag = Math.round(p.scale * 128);
+      //c2d.fillStyle = "rgb("+(texel.r + mag)+", "+(texel.g + mag)+", "+(texel.b + mag)+")";
+    }
+
+    if (useCircles) {
+      c2d.beginPath();
+      c2d.arc(p.px, p.py, texelSizeMul * 15 * p.scale, 0, Math.PI*2, true);
+      c2d.closePath();
+      c2d.fill();
+    } else {
+      var s = texelSizeMul * 15 * p.scale;
+      c2d.fillRect(p.px - s, p.py - s, 2*s, 2*s);
+    }
+
+    if (false) {
+      var pixSize = 22 * p.scale;
+      c2d.font = pixSize + "px helvetica";
+      c2d.fillText(texel.text, p.px, p.py);
+    }
+/*
+    c2d.save();
+    c2d.translate(p.px, p.py);
+    c2d.scale(2 * p.scale, 2 * p.scale);
+    c2d.fillText(texel.text, 0, 0);
+    c2d.restore();
+*/
+  }
+}
+
+/** [Example] migration of the 4 phases of the benchmark **/
+
+var Controller = {
+  STAGES: 4,
+  stage: 0,
+  fps: [],
+  disposing: false,
+
+  init: function() {
+    canvassurfer_init();
+    setTimeout(Controller.nextStage, 3000);
+    // revert back to stage zero when the benchmark is being disposed
+    VellamoBenchmark.onDisposeCallback = function() {
+      Controller.stage = 0;
+      Controller.disposing = true;
+    }
+  },
+
+  nextStage: function() {
+
+    Controller.stage++;
+    if (Controller.stage < Controller.STAGES) {
+      Controller.fps.push(frameCounter.getAverageFps());
+      frameCounter.clear();
+      setTimeout(Controller.nextStage, 3000);
+      return;
+    }
+
+    // end of benchmark, also checking the error conditions
+    Controller.fps.push(frameCounter.getAverageFps());
+
+    if (Controller.fps.length != Controller.STAGES)
+      VellamoBenchmark.endWithError('Invalid FPS Length ('+Controller.fps.length+')', 1);
+    else
+      VellamoBenchmark.endWithResultsJSON(
+        {
+          fps0: Controller.fps[0],
+          fps1: Controller.fps[1],
+          fps2: Controller.fps[2],
+          fps3: Controller.fps[3]
+        }
+      );
+
+    // from now on, we should not communicate and expect to be deleted anytime soon
+  },
+}
+
+</script>
+<style type="text/css">
+  #theCanvas {
+    margin: auto;
+    display: block;
+    height: 100%;
+  }
+  body {
+    background-image: url('background.jpg');
+    background-size: 100% 100%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+</style>
+</head>
+<body onload="VellamoBenchmark.loadOnShellReady(Controller.init)">
+<canvas id="theCanvas" width=512 height=512>You don't support HTML5 canvas.</canvas>
+</body>
+</html>

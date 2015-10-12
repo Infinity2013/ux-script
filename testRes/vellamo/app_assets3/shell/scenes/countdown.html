@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+Copyright (c) 2014 Qualcomm Technologies, Inc.  All Rights Reserved.
+Qualcomm Technologies Proprietary and Confidential.
+-->
+<html>
+<head>
+<title>Few Seconds To Go...</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<link type="text/css" rel='stylesheet' href="countdown.css"/>
+<script src="../../common/per_benchmark.js"></script>
+<script type="text/javascript">
+    var value = 5 +1;
+    function decreaseValue() {
+      value--;
+      if (value >= 0) {
+        setTimeout(decreaseValue, 1000);
+        document.getElementById('number').innerText = value > 0 ? value : " ";
+      }
+
+      if (value == 1)
+        document.getElementById('anchor').className += ' a-implode';
+
+      if (value == 0) {
+        // manual API invocation to quit this 'thing' (not a benchmark)
+        setTimeout(function() {
+          window.parent.postMessage(
+            {
+              fromVellamoBenchmark : true,
+              type : 'task-continue',
+            }, '*'
+          )
+        }, 0);
+      }
+    }
+
+    function startCountdown() {
+      document.getElementById('number').className += ' a-halfSpin';
+      decreaseValue();
+    }
+  </script>
+</head>
+<body onload="VellamoBenchmark.loadOnShellReady(startCountdown)">
+<div class="anchor-center" id="anchor">
+<div class="spin-container">
+<img class="spin-image a-cw" src="countdown_corona.png"/>
+</div>
+<div class="spin-container">
+<img class="spin-image a-ccw" src="countdown_corona.png"/>
+</div>
+<div class="spin-container a-pulse-2s">
+<img class="spin-image" src="countdown_circle.png"/>
+</div>
+<div class="spin-container">
+<div class="spin-number" id="number"></div>
+</div>
+</div>
+</body>
+</html>
