@@ -83,14 +83,18 @@ class Adb(object):
 
     def root(self):
         if self.getprop("service.adb.root") == "1":
-            return
+            return 0
         else:
             if self.canroot:
                 self.cmd("root")
-                time.sleep(3)
+                time.sleep(4)
                 self.canroot = True if self.getprop("service.adb.root") == "1" else False
+                if self.getprop("service.adb.root") == "0":
+                    raise ValueError("Can't root")
+                else:
+                    return 0
             else:
-                print "This device can't be rooted"
+                raise ValueError("Can't root")
 
     def setsysfs(self, path, value):
         self.cmd("shell echo %s > %s" % (str(value), path)).communicate()
