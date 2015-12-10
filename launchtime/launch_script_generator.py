@@ -18,7 +18,7 @@ def getArgs():
     args["uiobject_name"] = uiobject_name
     uiobject_name = re.sub(r"\s+", "_", uiobject_name)
     args["sleep_time"] = sleep_time
-    args["repeat"] = 10
+    args["repeat"] = 5
     return args
 
 def writeHeader(outfd):

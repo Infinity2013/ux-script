@@ -17,9 +17,9 @@ last_end = 0
 
 def enable_debug(flag):
     if flag == 0:
-        adb.cmd("shell echo 0 > /sys/power/pm_print_times")
+        adb.cmd("shell 'echo 0 > /sys/power/pm_print_times'")
     else:
-        adb.cmd("shell echo 1 > /sys/power/pm_print_times")
+        adb.cmd("shell 'echo 1 > /sys/power/pm_print_times'")
 
 
 def main():
@@ -86,7 +86,7 @@ def main():
             print outContent
             outfd.write(outContent)
             outfd.write("\n")
-            
+
             if fwWakeupTime > 0 and kernelWakeupTime > 0 and kernelWakeupTime < 1000:
                 resList.append(wakeupTime)
         cmd = raw_input("Press any key to continue or f to stop.")
@@ -123,12 +123,12 @@ def getKernelWakeupTime(dmesgoutput):
     dmesgLogs = fd.readlines()
     for log in dmesgLogs:
         dmesgElement = loghelper.parse2Element(log, "dmesg")
-    
+
         if "Enabling non-boot CPUs" in dmesgElement.content or "Suspended for" in dmesgElement.content:
             startpoint = dmesgElement.ts
         elif "Restarting tasks" in dmesgElement.content:
             endpoint = dmesgElement.ts
-    
+
     fd.close()
     if startpoint == last_start or endpoint == last_end:
         return 0

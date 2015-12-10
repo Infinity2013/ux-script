@@ -39,14 +39,14 @@ def init_dir():
         if key != 'cur':
             checkandcreate(work_path_dict.get(key))
 
-def setFreq(freq): 
+def setFreq(freq):
     adb.root()
-    print "setFreq start!" 
+    print "setFreq start!"
     execperm("add")
-    pattern = "adb shell \"echo %d > /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\"" 
-    for i in xrange(4): 
-        cmd = pattern % (freq, i) 
-        os.system(cmd) 
+    pattern = "adb shell \"echo %d > /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\""
+    for i in xrange(4):
+        cmd = pattern % (freq, i)
+        os.system(cmd)
     print "setFreq done!"
     execperm("eliminate")
 
@@ -210,7 +210,7 @@ def get_coordinate(uiobject_name):
 
 def doQALaunchTime(qaArgs):
     uiobject_name = qaArgs.get("uiobject_name")
-    
+
     layer = qaArgs.get("layer")
     duration = qaArgs.get("sleep_time")
     packageName = qaArgs.get("packageName")
@@ -221,6 +221,7 @@ def doQALaunchTime(qaArgs):
     finishtype = qaArgs.get("finishtype", "amstop")
     time_for_stable = qaArgs.get("stabletime", 10)
     end_evallist = qaArgs.get("end_evallist")
+    warm_launch = qaArgs.get("warm_launch", False)
     global SYSTRACE_FLAG, TAGS
     if systrace != "":
         SYSTRACE_FLAG = True
@@ -231,7 +232,10 @@ def doQALaunchTime(qaArgs):
     if qaArgs.get("skip") == None:
         x, y = get_coordinate(uiobject_name)
         getLaunchTime(x, y, layer, touchscreen, duration)
-        killproc(finishtype, packageName)
+        if not warm_launch:
+            killproc(finishtype, packageName)
+        else:
+            adb.cmd("shell input keyevent 3")
 
     resList = []
     index = 0
@@ -258,7 +262,10 @@ def doQALaunchTime(qaArgs):
         if end_evallist != None:
             for line in end_evallist:
                 eval(line)
-        killproc(finishtype, packageName)
+        if not warm_launch:
+            killproc(finishtype, packageName)
+        else:
+            adb.cmd("shell input keyevent 3")
         url = "%s/%s(%d)_%d.html" % (os.getcwd(), outputName, res, index)
         if SYSTRACE_FLAG is True:
             dbinfo["url"] = url

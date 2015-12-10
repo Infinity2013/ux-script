@@ -1,6 +1,5 @@
 import subprocess
 import os
-import sys
 import time
 
 
@@ -46,7 +45,7 @@ class Adb(object):
         cmd_line = [self.adb()] + list(args)
         if os.name != "nt":
             cmd_line = [" ".join(cmd_line)]
-        return subprocess.Popen(cmd_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return subprocess.Popen(cmd_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
 
     def device_serial(self):
         if not self.default_serial:
@@ -72,9 +71,9 @@ class Adb(object):
     def getprop(self, key, t="str"):
         val = self.cmd("shell getprop %s" % key).communicate()[0].decode("utf-8")
         if t == "int":
-            return int(var)
+            return int(val)
         elif t == "float":
-            return float(var)
+            return float(val)
         else:
             return val.strip()
 
@@ -96,13 +95,12 @@ class Adb(object):
             else:
                 raise ValueError("Can't root")
 
-    def setsysfs(self, path, value):
-        self.cmd("shell echo %s > %s" % (str(value), path)).communicate()
-        return self.getsysfs(path) == str(value)
+    def checkpackage(self, package):
+        info = self.cmd("shell 'dumpsys package %s'" % package).communicate()[0]
+        return info != ""
 
     def getsysfs(self, path):
         out = self.cmd("shell cat %s" % path).communicate()[0].strip()
         return out
 
 adb = Adb()
-adb.root()

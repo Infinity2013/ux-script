@@ -8,16 +8,22 @@ p = ArgumentParser(usage='xxx_launch.py -t n -r n', description='Author wxl')
 p.add_argument('-t', default=5,  dest='slee_time', type=int, help='sleep_time')
 p.add_argument('-r', default=5,  dest='repeat', type=int, help='repeat')
 p.add_argument('--systrace', default='', dest='systrace', nargs='+', help='systrace tags')
-p.add_argument('-w', action='store_true', dest='warm_launch')
 a = p.parse_known_args(sys.argv)
 
 args = {}
-args["layer"] = "SurfaceView"
-args["packageName"] = "com.android.chrome"
-args["outName"] = "%s_%s-%s.launch" % ("Chrome", ic.board(), ic.release())
-args["uiobject_name"] = "Chrome"
+#args["layer"] = "com.android.mms/com.android.mms.ui.ConversationList"
+#args["packageName"] = "com.android.mms"
+#args["layer"] = "com.android.messaging/com.android.messaging.ui.conversationlist.ConversationListActivity"
+#args["packageName"] = "com.android.messaging"
+
+args["layer"] = "com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity"
+args["packageName"] = "com.google.android.apps.messaging"
+
+args["outName"] = "%s-%s_%s.launch" % ("Messaging", ic.board(), ic.release())
+args["uiobject_name"] = "Messenger"
 args["repeat"] = a[0].repeat
 args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
-args['warm_launch'] = a[0].warm_launch
+args["skip"] = 1
+args["evallist"] = ['adb.cmd("reboot")', 'time.sleep(60)']
 doQALaunchTime(args)

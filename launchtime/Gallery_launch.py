@@ -11,12 +11,10 @@ p.add_argument('--systrace', default='', dest='systrace', nargs='+', help='systr
 a = p.parse_known_args(sys.argv)
 
 args = {}
-args["layer"] = "com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity"
-# args["layer"] = "com.google.android.apps.plus/com.google.android.apps.photos.phone.PhotosHomeActivity"
-args["packageName"] = "com.google.android.apps.photos"
-# args["packageName"] = "com.google.android.apps.plus"
-args["outName"] = "%s-%s_%s.launch" % ("Photos", ic.board(), ic.release())
-args["uiobject_name"] = "Photos"
+args["layer"] = "com.android.gallery3d/com.android.gallery3d.app.GalleryActivity"
+args["packageName"] = "com.android.gallery3d"
+args["outName"] = "%s-%s_%s.launch" % ("Gallery", ic.board(), ic.release())
+args["uiobject_name"] = "Gallery"
 args["repeat"] = a[0].repeat
 args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
