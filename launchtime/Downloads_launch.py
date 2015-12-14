@@ -18,13 +18,9 @@ args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
 args['warm_launch'] = a[0].warm_launch
 # ----------------------------------------------------------------------------------------------------
-
-
-args["uiobject_name"] = "Messenger"
-args["layer"] = "com.android.messaging/com.android.messaging.ui.conversationlist.ConversationListActivity"
-args["packageName"] = "com.android.messaging"
-args["outName"] = "%s(%s)-%s_%s.launch" % ("Messenger", 'warm' if a[0].warm_launch else 'cold', ic.board(), ic.release())
-args["skip"] = 1
-args["evallist"] = ['adb.cmd("reboot")', 'time.sleep(60)']
+args["uiobject_name"] = "Downloads"
+args["layer"] = "com.android.documentsui/com.android.documentsui.DocumentsActivity"
+args["packageName"] = "com.android.documentsui"
+args["outName"] = "%s(%s)-%s_%s.launch" % ("Downloads", 'warm' if a[0].warm_launch else 'cold', ic.board(), ic.release())
 # ----------------------------------------------------------------------------------------------------
 doQALaunchTime(args)

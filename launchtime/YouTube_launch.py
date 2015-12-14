@@ -20,11 +20,9 @@ args['warm_launch'] = a[0].warm_launch
 # ----------------------------------------------------------------------------------------------------
 
 
-args["uiobject_name"] = "Messenger"
-args["layer"] = "com.android.messaging/com.android.messaging.ui.conversationlist.ConversationListActivity"
-args["packageName"] = "com.android.messaging"
-args["outName"] = "%s(%s)-%s_%s.launch" % ("Messenger", 'warm' if a[0].warm_launch else 'cold', ic.board(), ic.release())
-args["skip"] = 1
-args["evallist"] = ['adb.cmd("reboot")', 'time.sleep(60)']
+args["uiobject_name"] = "YouTube"
+args["layer"] = "com.google.android.youtube/com.google.android.apps.youtube.app.WatchWhileActivity"
+args["packageName"] = "com.google.android.youtube"
+args["outName"] = "%s(%s)-%s_%s.launch" % ("YouTube", 'warm' if a[0].warm_launch else 'cold', ic.board(), ic.release())
 # ----------------------------------------------------------------------------------------------------
 doQALaunchTime(args)

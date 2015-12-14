@@ -81,7 +81,7 @@ class InfoCollector(Adb):
         dic = {}
         dic["freq"] = self.freq()
         dic["board"] = self.board()
-        # dic["pname"] = self.pversion(pname)
+        dic["pname"] = self.pversion(pname)
         dic["rel"] = self.release()
         # dic["mem"] = self.available_mem()
         # dic["temp"] = self.temperature()
