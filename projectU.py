@@ -72,6 +72,8 @@ def parse_tasklist(fname="tasklist.xml"):
             soup = BeautifulSoup("\n".join(f.readlines()))
             l_node = soup.findAll('case')
             d_task = {}
+            # add index to distinguish same cases in on tasklist
+            index = 0
             for node in l_node:
                 d_attr = {}
                 for key, val in node.attrs:
@@ -84,7 +86,8 @@ def parse_tasklist(fname="tasklist.xml"):
                     args.append('-w')
                 if d_attr['systrace'] != '-1':
                     args.append('--systrace %s' % d_attr['systrace'])
-                d_task[d_attr['name']] = (" ".join(args))
+                d_task["%s_%d" % (d_attr['name'], index)] = (" ".join(args))
+                index += 1
             return d_task
     else:
         print "%s not found in current folder" % fname
@@ -119,7 +122,7 @@ def task_executor(d_task):
 
 def generate_xlsx():
     result_dict = {}
-    for p, d, f in os.walk("%s/logcat" % os.getcwd()):
+    for p, d, f in os.walk("%s/dmesg" % os.getcwd()):
         for t in f:
             group = re.match('(?P<case>[a-zA-Z_\(\)]+)-.*\((?P<result>\d+).*', t)
             if group is not None:

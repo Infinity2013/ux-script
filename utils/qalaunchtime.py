@@ -39,27 +39,6 @@ def init_dir():
         if key != 'cur':
             checkandcreate(work_path_dict.get(key))
 
-def setFreq(freq):
-    adb.root()
-    print "setFreq start!"
-    execperm("add")
-    pattern = "adb shell \"echo %d > /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\""
-    for i in xrange(4):
-        cmd = pattern % (freq, i)
-        os.system(cmd)
-    print "setFreq done!"
-    execperm("eliminate")
-
-def execperm(t):
-    flag = ""
-    if t == "add":
-        flag = "660"
-    else:
-        flag = "440"
-    pattern = "adb shell \"chmod %s  /sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq\""
-    for i in xrange(4):
-        cmd = pattern % (flag, i)
-        os.system(cmd)
 
 def dump_logcat(name):
     os.chdir(work_path_dict.get('logcat'))
@@ -93,7 +72,9 @@ def get_coordinate_precision():
 
 def start_tracing(tags):
     if SYSTRACE_FLAG:
+        print tags
         adb.cmd("shell \"atrace %s --async_start\"" % (tags)).communicate()
+        print "done"
 
 
 def stop_tracing(out):
@@ -101,8 +82,11 @@ def stop_tracing(out):
         os.chdir(work_path_dict.get('systrace'))
         with open("out.trace", "w") as f:
             f.write(adb.cmd("shell \"atrace --async_dump -z\"").communicate()[0])
+        out = out.replace("(", "\(")
+        out = out.replace(")", "\)")
         cmd = "systrace.py --from-file=out.trace -o %s" % out
-        os.system(cmd)
+        p = subprocess.Popen(cmd, shell=True)
+        p.wait()
         os.chdir(work_path_dict.get('cur'))
 
 def removeFromLRU():
@@ -200,7 +184,7 @@ def killproc(t, pname):
     elif t == "amstop":
         amstop(pname)
 
-def get_coordinate(uiobject_name):
+def get_coordinate(uiobject_name, x, y):
     bounds = d(text=uiobject_name).info.get("bounds")
     x = (bounds.get("left") + bounds.get("right")) / 2
     y = (bounds.get("top") + bounds.get("bottom")) / 2
@@ -229,8 +213,9 @@ def doQALaunchTime(qaArgs):
             TAGS = " ".join(systrace)
     touchscreen = getTouchNode()
     outfd = open(outputName, "w")
+    x, y = -1, -1
     if qaArgs.get("skip") == None:
-        x, y = get_coordinate(uiobject_name)
+        x, y = get_coordinate(uiobject_name, x, y)
         getLaunchTime(x, y, layer, touchscreen, duration)
         if not warm_launch:
             killproc(finishtype, packageName)
@@ -252,7 +237,7 @@ def doQALaunchTime(qaArgs):
         start_tracing(TAGS)
         dbinfo = ic.collect(packageName)
         dbinfo['name'] = packageName.split(".")[-1]  # i.e com.android.settings name: settings
-        x, y = get_coordinate(uiobject_name)
+        x, y = get_coordinate(uiobject_name, x, y)
         res = getLaunchTime(x, y, layer, touchscreen, duration)
         dbinfo["value"] = res
         content = "index %d: %d ms" % (index, res)
@@ -270,9 +255,9 @@ def doQALaunchTime(qaArgs):
         if SYSTRACE_FLAG is True:
             dbinfo["url"] = url
         sw.insert("launch", dbinfo)
-        stop_tracing("%s\(%d\)_%d.html" % (outputName, res, index))
-        dump_logcat("%s\(%d\)_%d.logcat" % (outputName, res, index))
-        dump_dmesg("%s\(%d\)_%d.dmesg" % (outputName, res, index))
+        stop_tracing("%s(%d)_%d.html" % (outputName, res, index))
+        dump_logcat("%s(%d)_%d.logcat" % (outputName, res, index))
+        dump_dmesg("%s(%d)_%d.dmesg" % (outputName, res, index))
         time.sleep(time_for_stable)
 
     outfd.write(content)

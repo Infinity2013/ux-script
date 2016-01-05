@@ -1,2 +1,13 @@
-UX Test Script
-It can update itself automatically
+哥就直接用中文了
+如何安装：
+执行install.sh，按照脚本提示安装依赖库
+如何使用：
+1. 在新刷好的机器上先执行prepare.sh，会把测试用到的一些资源推到板子上
+2. 执行projectU.py -g在当前文夹下生成tasklist.xml，然后配置xml
+3. 执行projectU.py，脚本就会根据tasklist.xml进行测试。脚本会根据测试结果实时更新tasklist.xml
+如：Chrome_launch.py测完了，这个就会从tasklist.xml里移除
+4. 如果中间出现错误或者想停掉可以Ctrl+c，再执行projectU.py会继续上次测试再开始。
+5. 脚本执行结束后，会在当前文件夹下生成一个tmp.xlsx的表格文件，里面包涵了测试结果。
+PS：表格文件是根据logcat下的文件生成的，如果不想混乱，最好把脚本弄成环境变量。
+6. 单独生成xlsx文件，在logcat文件夹的上一级执行projectU.py -u
+

@@ -1,5 +1,5 @@
 adb root
-
+sleep 2
 current=$(pwd)
 for push in $(find -name "push.sh")
 do

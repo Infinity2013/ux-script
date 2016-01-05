@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 import os
-import sys
 import re
-import loghelper
-import adbhelper
 import shutil
+import sys
+
+import loghelper
 from adb import adb
-from adbhelper import getProp
+from infocollector import collector as ic
+
 logcatcmdpattern = "adb logcat -d -v threadtime > %s.log"
 dmesgcmdpattern = "adb shell dmesg > %s.dmesg"
 memcmdpattern = "adb shell dumpsys meminfo > %s.mi"
@@ -39,10 +40,9 @@ def main():
     outputList = []
     index = 0
 
-
     resList = []
 
-    releaseInfo = adbhelper.getDeviceInfo()
+    releaseInfo = "%s_%s" % (ic.board(), ic.release())
     resOutput = "%s(%s).res" % (mainKey, releaseInfo)
     outfd = open(resOutput, "w")
 
@@ -61,8 +61,6 @@ def main():
 
         os.system(logcatcmd)
         os.system(dmesgcmd)
-#        os.system(cpucmd)
-#        os.system(memcmd)
 
         outputpreffix = re.sub("\\\\", "", outputpreffix)
         logoutput = "%s.log" % outputpreffix
