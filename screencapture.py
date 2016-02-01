@@ -8,7 +8,7 @@ import time
 DBG = False
 
 def shot():
-    os.system("adb shell input keyevent 120")
+    os.system("adb shell screencap /sdcard/1.png")
 
 def getname():
     p = subprocess.Popen("adb shell ls /sdcard/Pictures/Screenshots", shell = True, stdout = subprocess.PIPE)
@@ -28,7 +28,7 @@ def main():
     shot()
     time.sleep(2)
 
-    adbcmd = "adb pull /sdcard/Pictures/Screenshots/%s ./%s.png" % (getname(), newname)
+    adbcmd = "adb pull /sdcard/1.png ./%s.png" % (newname)
 
     if DBG:
         print adbcmd

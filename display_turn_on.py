@@ -9,9 +9,7 @@ from adb import adb
 from infocollector import collector as ic
 
 logcatcmdpattern = "adb logcat -d -v threadtime > %s.log"
-dmesgcmdpattern = "adb shell dmesg > %s.dmesg"
-memcmdpattern = "adb shell dumpsys meminfo > %s.mi"
-cpucmdpattern = "adb shell dumpsys cpuinfo > %s.ci"
+dmesgcmdpattern = "adb shell dmesg -c > %s.dmesg"
 
 last_start = 0
 last_end = 0
@@ -56,10 +54,9 @@ def main():
 
         logcatcmd = logcatcmdpattern % (outputpreffix)
         dmesgcmd = dmesgcmdpattern % (outputpreffix)
-        cpucmd = cpucmdpattern % outputpreffix
-        memcmd = memcmdpattern % outputpreffix
 
         os.system(logcatcmd)
+        os.system('adb logcat -c')
         os.system(dmesgcmd)
 
         outputpreffix = re.sub("\\\\", "", outputpreffix)
