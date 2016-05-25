@@ -9,7 +9,7 @@ from adb import adb
 from infocollector import collector as ic
 
 logcatcmdpattern = "adb logcat -d -v threadtime > %s.log"
-dmesgcmdpattern = "adb shell dmesg -c > %s.dmesg"
+dmesgcmdpattern = "adb shell dmesg > %s.dmesg"
 
 last_start = 0
 last_end = 0

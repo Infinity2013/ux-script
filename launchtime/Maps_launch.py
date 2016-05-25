@@ -19,3 +19,12 @@ args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
 args['warm_launch'] = a[0].warm_launch
 args['skip'] = a[0].skip
+# ----------------------------------------------------------------------------------------------------
+
+
+args["uiobject_name"] = "Maps"
+args["layer"] = "com.google.android.apps.maps/com.google.android.maps.MapsActivity"
+args["packageName"] = "com.google.android.apps.maps"
+args["outName"] = "%s(%s)-%s_%s.launch" % ("Maps", 'warm' if a[0].warm_launch else 'cold', ic.board(), ic.release())
+# ----------------------------------------------------------------------------------------------------
+doQALaunchTime(args)

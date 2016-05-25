@@ -62,7 +62,6 @@ class InfoCollector(Adb):
             raise ValueError("Can't get freq")
         return freq
 
-
     def temperature(self):
         tempzone_count = 6
         temp = {}
@@ -79,12 +78,13 @@ class InfoCollector(Adb):
     def collect(self, pname):
         self.root()
         dic = {}
-        dic["freq"] = self.freq()
+        try:
+            dic["freq"] = self.freq()
+        except:
+            dic["freq"] = 0
         dic["board"] = self.board()
         dic["pname"] = self.pversion(pname)
         dic["rel"] = self.release()
-        # dic["mem"] = self.available_mem()
-        # dic["temp"] = self.temperature()
         return dic
 
 collector = InfoCollector()

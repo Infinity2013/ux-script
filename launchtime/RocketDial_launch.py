@@ -19,3 +19,12 @@ args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
 args['warm_launch'] = a[0].warm_launch
 args['skip'] = a[0].skip
+# ----------------------------------------------------------------------------------------------------
+
+
+args["uiobject_name"] = "RocketDial"
+args["layer"] = "intelgeen.rocketdial.trail/intelgeen.rocketdial.pro.RocketDial"
+args["packageName"] = "intelgeen.rocketdial.trail"
+args["outName"] = "%s(%s)-%s_%s.launch" % ("RocketDial", 'warm' if a[0].warm_launch else 'cold', ic.board(), ic.release())
+# ----------------------------------------------------------------------------------------------------
+doQALaunchTime(args)

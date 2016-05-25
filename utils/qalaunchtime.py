@@ -13,7 +13,7 @@ from uiautomator import device as d
 from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 90
-TAGS = "gfx wm am input view freq res sched"
+TAGS = "gfx wm am input view freq res sched idle app"
 SYSTRACE_FLAG = False
 
 '''
@@ -72,7 +72,8 @@ def get_coordinate_precision():
 
 def start_tracing(tags):
     if SYSTRACE_FLAG:
-        print tags
+        adb.cmd("shell echo 1 > /sys/kernel/debug/tracing/events/raw_syscalls/sys_enter/enable")
+        adb.cmd("shell echo 1 > /sys/kernel/debug/tracing/events/raw_syscalls/sys_exit/enable")
         adb.cmd("shell \"atrace %s --async_start\"" % (tags)).communicate()
         print "done"
 
@@ -102,8 +103,9 @@ def amstop(packageName):
 
 
 def getStartpoint(touchscreen, x, y):
-    out = adb.cmd("shell /data/eventHunter -i %s -g TOUCH -p %d -q %d -t B" % (
+    out = adb.cmd("shell /data/local/tmp/eventHunter -i %s -g TOUCH -p %d -q %d -t B" % (
         touchscreen, x, y)).communicate()[0].splitlines()[0].strip()
+    print touchscreen
     if re.findall("\(\d*", out) != []:
         out = out.split("(")[1].strip()[:-1]
     else:
@@ -124,19 +126,22 @@ def getEndpoint(layer):
             break
     if long(resContent[firstFrameIdx - 1].split()[0]) != 0:
         print "Warning: firatFrame is gone!"
-    return endpoint
+    lastFrame = long(resContent[-2].split()[1])
+    return (endpoint, lastFrame)
 
 
 def getLaunchTime(x, y, layer, touchscreen, duration):
     startpoint = getStartpoint(touchscreen, x, y)
     time.sleep(duration)
-    endpoint = getEndpoint(layer)
+    endpoint, lastframe = getEndpoint(layer)
     if DBG:
         print ("start: %d, end: %d") % (startpoint, endpoint)
     launchtime = endpoint - startpoint
     launchtime /= 1000 * 1000
+    launchtime_lastframe = lastframe - startpoint
+    launchtime_lastframe /= 1000 * 1000
 
-    return launchtime
+    return launchtime, launchtime_lastframe
 
 
 def getTouchNode():
@@ -156,7 +161,7 @@ def getTouchNode():
     position = 0
 
     for item in devices_info_list:
-        if "touch" in item or "ts" in item or "ft5x0x" in item:
+        if "touch" in item or "ts" in item or "ft5x0x" in item or ('tpd' in item and 'kpd' not in item):
             position = devices_info_list.index(item)
             break
     '''
@@ -238,26 +243,26 @@ def doQALaunchTime(qaArgs):
         dbinfo = ic.collect(packageName)
         dbinfo['name'] = packageName.split(".")[-1]  # i.e com.android.settings name: settings
         x, y = get_coordinate(uiobject_name, x, y)
-        res = getLaunchTime(x, y, layer, touchscreen, duration)
-        dbinfo["value"] = res
-        content = "index %d: %d ms" % (index, res)
+        firstframe, lastframe = getLaunchTime(x, y, layer, touchscreen, duration)
+        dbinfo["value"] = firstframe
+        content = "index %d: %d(%d) ms" % (index, firstframe, lastframe)
         print content
         index += 1
-        resList.append(res)
-        if end_evallist != None:
+        resList.append(firstframe)
+        if end_evallist is not None:
             for line in end_evallist:
                 eval(line)
         if not warm_launch:
             killproc(finishtype, packageName)
         else:
             adb.cmd("shell input keyevent 3")
-        url = "%s/%s(%d)_%d.html" % (os.getcwd(), outputName, res, index)
+        url = "%s/%s(%d)_%d.html" % (os.getcwd(), outputName, firstframe, index)
         if SYSTRACE_FLAG is True:
             dbinfo["url"] = url
         sw.insert("launch", dbinfo)
-        stop_tracing("%s(%d)_%d.html" % (outputName, res, index))
-        dump_logcat("%s(%d)_%d.logcat" % (outputName, res, index))
-        dump_dmesg("%s(%d)_%d.dmesg" % (outputName, res, index))
+        stop_tracing("%s(%d)_%d.html" % (outputName, firstframe, index))
+        dump_logcat("%s(%d)_%d.logcat" % (outputName, firstframe, index))
+        dump_dmesg("%s(%d)_%d.dmesg" % (outputName, firstframe, index))
         time.sleep(time_for_stable)
 
     outfd.write(content)

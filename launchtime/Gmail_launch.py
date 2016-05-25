@@ -19,3 +19,12 @@ args["sleep_time"] = a[0].slee_time
 args["systrace"] = a[0].systrace
 args['warm_launch'] = a[0].warm_launch
 args['skip'] = a[0].skip
+# ----------------------------------------------------------------------------------------------------
+
+
+args["uiobject_name"] = "Gmail"
+args["layer"] = "com.google.android.gm/com.google.android.gm.ConversationListActivityGmail"
+args["packageName"] = "com.google.android.gm"
+args["outName"] = "%s(%s)-%s_%s.launch" % ("Gmail", 'warm' if a[0].warm_launch else 'cold', ic.board(), ic.release())
+# ----------------------------------------------------------------------------------------------------
+doQALaunchTime(args)
