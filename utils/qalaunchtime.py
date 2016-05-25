@@ -5,12 +5,9 @@ import subprocess
 import re
 import math
 import time
-from mail import send_email
 from adb import adb
 from infocollector import collector as ic
-from mysqlwrapper import wrapper as sw
 from uiautomator import device as d
-from pprint import pprint
 DBG = False
 SLEEP_TIME_TO_BE_STABLE = 90
 TAGS = "gfx wm am input view freq res sched idle app"
@@ -259,7 +256,7 @@ def doQALaunchTime(qaArgs):
         url = "%s/%s(%d)_%d.html" % (os.getcwd(), outputName, firstframe, index)
         if SYSTRACE_FLAG is True:
             dbinfo["url"] = url
-        sw.insert("launch", dbinfo)
+        # sw.insert("launch", dbinfo)
         stop_tracing("%s(%d)_%d.html" % (outputName, firstframe, index))
         dump_logcat("%s(%d)_%d.logcat" % (outputName, firstframe, index))
         dump_dmesg("%s(%d)_%d.dmesg" % (outputName, firstframe, index))
@@ -300,7 +297,7 @@ def doQALaunchTime(qaArgs):
     mailargs["msg"] = mailmsg
     mailargs["subject"] = "%s(%s_%s - %s) : %d ms - %d " % (packageName,
             ic.board(), ic.release(), ic.pversion(packageName), average, rsd)
-    send_email(mailargs)
+    # send_email(mailargs)
 
     return rsd
 
